@@ -19,7 +19,8 @@ test/tmp/**
 # Production
 build
 dist
-dist
+dist/*
+!dist/.gitkeep
 .next
 target
 .out
@@ -72,3 +73,9 @@ yarn-error.log*
 
 # Python
 venv
+
+# Vite
+.vite
+
+# Wrangler
+.wrangler/
