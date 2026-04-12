@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ChatInputProps {
   onSend: (content: string) => void;
@@ -18,7 +18,6 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
 
   const handleSend = () => {
     const trimmed = value.trim();
-    console.log("[ChatInput] handleSend", { trimmed, disabled });
     if (!trimmed || disabled) return;
     onSend(trimmed);
     setValue("");
