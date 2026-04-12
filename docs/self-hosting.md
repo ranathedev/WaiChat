@@ -6,7 +6,7 @@ WaiChat deploys entirely on Cloudflare's free tier. This guide covers optional c
 
 ## One-Click Deploy
 
-The easiest way to self-host WaiChat is via the Deploy to Cloudflare button in the [README](../README.md).
+The easiest way to self-host WaiChat is via the Deploy to Cloudflare button below.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/waichat)
 

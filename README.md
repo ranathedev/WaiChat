@@ -26,15 +26,11 @@ A Private, Serverless AI Chat App built on [Cloudflare Workers AI](https://devel
 ## Deploy
 
 ### One-click
+The easiest way to self-host WaiChat is via the Deploy to Cloudflare button below.
+
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/waichat)
 
-Click the **Deploy to Cloudflare** button above. Cloudflare will:
-
-1. Fork this repo into your GitHub account
-2. Provision a D1 database and Workers AI binding automatically
-3. Build and deploy the app to your `*.workers.dev` subdomain
-
-That's it. No CLI, no config files to edit.
+Click the button and Cloudflare handles everything automatically - no CLI, no config files to edit, no manual steps required. Behind the scenes it forks the repo into your GitHub account, provisions a D1 database and Workers AI binding, then builds and deploys the app to `https://waichat.<your-subdomain>.workers.dev`.
 
 ### Manual (CLI)
 
