@@ -156,8 +156,14 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
             if (trimmed === "data: [DONE]") continue;
             try {
               const json = JSON.parse(trimmed.slice(6));
-              if (json.response) {
-                fullContent += json.response;
+              let token: string | undefined;
+              if (typeof json.choices?.[0]?.delta?.content === "string") {
+                token = json.choices[0].delta.content;
+              } else if (typeof json.response === "string") {
+                token = json.response;
+              }
+              if (token) {
+                fullContent += token;
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantMessage.id
