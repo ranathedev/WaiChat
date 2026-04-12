@@ -98,8 +98,11 @@ const app = new Hono<{ Bindings: Env }>();
 
 app.use("/api/*", cors());
 
-// Models — fetched live from Cloudflare API
+// Models — fetched live from Cloudflare API if account ID is set, otherwise hardcoded fallback
 app.get("/api/models", async (c) => {
+  if (!c.env.CLOUDFLARE_ACCOUNT_ID) {
+    return c.json(AVAILABLE_MODELS);
+  }
   try {
     const res = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${c.env.CLOUDFLARE_ACCOUNT_ID}/ai/models/search?task=Text+Generation&per_page=100`,
@@ -116,10 +119,6 @@ app.get("/api/models", async (c) => {
       result: { id: string; name: string; description: string; task: { name: string } }[];
       success: boolean;
     };
-
-    if (data.result?.length > 0) {
-      console.log("[/api/models] sample:", JSON.stringify(data.result[0]));
-    }
 
     const models = data.result
       .map((m) => ({ id: m.name, name: formatModelName(m.name) }))
@@ -165,11 +164,6 @@ app.delete("/api/conversations", async (c) => {
   return c.json({ success: true });
 });
 
-app.delete("/api/conversations", async (c) => {
-  await c.env.DB.prepare("DELETE FROM conversations").run();
-  return c.json({ success: true });
-});
-
 app.delete("/api/conversations/:id", async (c) => {
   await deleteConversation(c.env.DB, c.req.param("id"));
   return c.json({ success: true });
@@ -184,12 +178,14 @@ app.post("/api/title", async (c) => {
 app.post("/api/chat", async (c) => {
   const body = await c.req.json<ChatRequest>();
   const { conversation_id, model, messages, storage_mode, system_prompt } = body;
-    const isCloud = storage_mode !== "local";
-    const now = Date.now();
+  const isCloud = storage_mode !== "local";
+  const now = Date.now();
 
-    const messagesWithSystem = system_prompt
-      ? [{ role: "system" as const, content: system_prompt }, ...messages]
-      : messages;
+  // Prepend system message if provided
+  const messagesWithSystem = system_prompt
+    ? [{ role: "system" as const, content: system_prompt }, ...messages]
+    : messages;
+
   if (isCloud) {
     // Save user message to D1
     const userMsg = messages[messages.length - 1];
@@ -208,7 +204,6 @@ app.post("/api/chat", async (c) => {
       );
     }
   }
-
   const stream = await streamAiResponse(c.env.AI, model as any, messagesWithSystem);
 
   if (isCloud) {
@@ -274,8 +269,6 @@ async function saveAssistantMessage(
   } finally {
     reader.releaseLock();
   }
-
-  console.log("[saveAssistantMessage] saving, length:", fullContent.length);
 
   if (fullContent) {
     await db
