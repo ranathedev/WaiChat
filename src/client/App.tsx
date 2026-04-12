@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useChat } from "./hooks/useChat";
+import { useModels, DEFAULT_MODEL_ID } from "./hooks/useModels";
 import type { StorageMode } from "./storage";
 import Sidebar from "./components/Sidebar";
 import MessageList from "./components/MessageList";
 import ChatInput from "./components/ChatInput";
 import ModelPicker from "./components/ModelPicker";
 
-const DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 const STORAGE_MODE_KEY = "waichat:storage-mode";
 
 export default function App() {
@@ -26,7 +26,8 @@ export default function App() {
     sendMessage,
   } = useChat(storageMode);
 
-  const [model, setModel] = useState(DEFAULT_MODEL);
+  const { models } = useModels();
+  const [model, setModel] = useState(DEFAULT_MODEL_ID);
 
   useEffect(() => {
     loadConversations();
@@ -73,6 +74,7 @@ export default function App() {
         {/* Header */}
         <header className="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
           <ModelPicker
+            models={models}
             value={model}
             onChange={setModel}
             disabled={isStreaming}
