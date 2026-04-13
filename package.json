@@ -6,10 +6,11 @@
   "scripts": {
     "dev:client": "vite --config vite.config.ts",
     "dev:worker": "wrangler dev",
-    "build": "vite build --config vite.config.ts && touch dist/.gitkeep",
+    "build": "([ \"$CF_PAGES\" = \"1\" ] && pnpm db:migrate:remote || echo 'Skipping migrations'); vite build --config vite.config.ts && touch dist/.gitkeep",
     "deploy:production": "pnpm build && wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply waichat-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply waichat-db --remote",
+    "db:migrate:binding": "npx wrangler d1 migrations apply DB --remote",
     "type-check": "tsc --noEmit"
   },
   "keywords": [
