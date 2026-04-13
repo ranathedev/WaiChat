@@ -41,7 +41,8 @@ function scoreModel(id: string): number {
   // Penalize old models
   if (id.includes("v0.1") || id.includes("v0.2")) score -= 20;
   if (id.includes("llama-2")) score -= 30;
-  if (id.includes("1.5b") || id.includes("0.5b") || id.includes("1.1b")) score -= 15;
+  if (id.includes("1.5b") || id.includes("0.5b") || id.includes("1.1b"))
+    score -= 15;
   if (id.includes("lora")) score -= 10;
 
   return score;
@@ -86,7 +87,7 @@ function formatModelName(id: string): string {
         coder: "Coder",
         distill: "Distill",
       };
-      return special[lower] ?? (word.charAt(0).toUpperCase() + word.slice(1));
+      return special[lower] ?? word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(" ");
 
@@ -97,40 +98,6 @@ function formatModelName(id: string): string {
 const app = new Hono<{ Bindings: Env }>();
 
 app.use("/api/*", cors());
-
-let isDbInitialized = false;
-
-async function ensureDbInit(db: D1Database) {
-  if (isDbInitialized) return;
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS conversations (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL DEFAULT 'New Conversation',
-      model TEXT NOT NULL,
-      storage_mode TEXT NOT NULL DEFAULT 'cloud',
-      created_at INTEGER NOT NULL,
-      updated_at INTEGER NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS messages (
-      id TEXT PRIMARY KEY,
-      conversation_id TEXT NOT NULL,
-      role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
-      content TEXT NOT NULL,
-      created_at INTEGER NOT NULL,
-      FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE
-    );
-    CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages (conversation_id);
-    CREATE INDEX IF NOT EXISTS idx_conversations_updated_at ON conversations (updated_at);
-  `);
-  isDbInitialized = true;
-}
-
-app.use("/api/*", async (c, next) => {
-  if (c.env.DB) {
-    await ensureDbInit(c.env.DB);
-  }
-  await next();
-});
 
 // Models — fetched live from Cloudflare API if account ID is set, otherwise hardcoded fallback
 app.get("/api/models", async (c) => {
@@ -144,13 +111,18 @@ app.get("/api/models", async (c) => {
         headers: {
           Authorization: `Bearer ${c.env.CLOUDFLARE_API_TOKEN}`,
         },
-      }
+      },
     );
 
     if (!res.ok) throw new Error(`Cloudflare API error: ${res.status}`);
 
-    const data = await res.json() as {
-      result: { id: string; name: string; description: string; task: { name: string } }[];
+    const data = (await res.json()) as {
+      result: {
+        id: string;
+        name: string;
+        description: string;
+        task: { name: string };
+      }[];
       success: boolean;
     };
 
@@ -211,7 +183,8 @@ app.post("/api/title", async (c) => {
 });
 app.post("/api/chat", async (c) => {
   const body = await c.req.json<ChatRequest>();
-  const { conversation_id, model, messages, storage_mode, system_prompt } = body;
+  const { conversation_id, model, messages, storage_mode, system_prompt } =
+    body;
   const isCloud = storage_mode !== "local";
   const now = Date.now();
 
@@ -234,18 +207,25 @@ app.post("/api/chat", async (c) => {
     // Auto-generate title from first user message
     if (messages.length === 1) {
       generateTitle(c.env.AI, userMsg.content).then((title) =>
-        updateConversationTitle(c.env.DB, conversation_id, title)
+        updateConversationTitle(c.env.DB, conversation_id, title),
       );
     }
   }
-  const stream = await streamAiResponse(c.env.AI, model as any, messagesWithSystem);
+  const stream = await streamAiResponse(
+    c.env.AI,
+    model as any,
+    messagesWithSystem,
+  );
 
   if (isCloud) {
     const [streamForClient, streamForSave] = stream.tee();
 
     // Save assistant message and update title/timestamp after stream ends
-    const savePromise = saveAssistantMessage(c.env.DB, conversation_id, streamForSave)
-      .then(() => updateConversationTimestamp(c.env.DB, conversation_id));
+    const savePromise = saveAssistantMessage(
+      c.env.DB,
+      conversation_id,
+      streamForSave,
+    ).then(() => updateConversationTimestamp(c.env.DB, conversation_id));
 
     c.executionCtx.waitUntil(savePromise);
 
@@ -268,7 +248,7 @@ app.post("/api/chat", async (c) => {
 async function saveAssistantMessage(
   db: D1Database,
   conversationId: string,
-  stream: ReadableStream
+  stream: ReadableStream,
 ): Promise<void> {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
@@ -306,8 +286,16 @@ async function saveAssistantMessage(
 
   if (fullContent) {
     await db
-      .prepare("INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)")
-      .bind(crypto.randomUUID(), conversationId, "assistant", fullContent, Date.now())
+      .prepare(
+        "INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)",
+      )
+      .bind(
+        crypto.randomUUID(),
+        conversationId,
+        "assistant",
+        fullContent,
+        Date.now(),
+      )
       .run();
   }
 }
