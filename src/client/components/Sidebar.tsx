@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { Conversation } from "../storage";
+import ConfirmModal from "./ConfirmModal";
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -17,58 +19,72 @@ export default function Sidebar({
   onDelete,
   onSettingsOpen,
 }: SidebarProps) {
+  const [pendingDelete, setPendingDelete] = useState<Conversation | null>(null);
+
   return (
-    <aside className="flex flex-col w-64 h-screen bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shrink-0">
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-        <button
-          onClick={onNew}
-          className="w-full py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
-        >
-          New Chat
-        </button>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-        {conversations.length === 0 && (
-          <p className="text-xs text-gray-400 dark:text-gray-600 text-center mt-8">
-            No conversations yet
-          </p>
-        )}
-        {conversations.map((c) => (
-          <div
-            key={c.id}
-            className={`group flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer text-sm transition-colors ${
-              activeId === c.id
-                ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300"
-                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-            }`}
-            onClick={() => onSelect(c.id)}
+    <>
+      <aside className="flex flex-col w-64 h-screen bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shrink-0">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+          <button
+            onClick={onNew}
+            className="w-full py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
           >
-            <span className="truncate">{c.title}</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(c.id);
-              }}
-              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity ml-2 shrink-0"
-              aria-label="Delete conversation"
+            New Chat
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+          {conversations.length === 0 && (
+            <p className="text-xs text-gray-400 dark:text-gray-600 text-center mt-8">
+              No conversations yet
+            </p>
+          )}
+          {conversations.map((c) => (
+            <div
+              key={c.id}
+              className={`group flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer text-sm transition-colors ${
+                activeId === c.id
+                  ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              onClick={() => onSelect(c.id)}
             >
-              ✕
-            </button>
-          </div>
-        ))}
-      </nav>
+              <span className="truncate">{c.title}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPendingDelete(c);
+                }}
+                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity ml-2 shrink-0 cursor-pointer"
+                aria-label="Delete conversation"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+          <p className="text-base text-gray-400 dark:text-gray-600">WaiChat</p>
+          <button
+            onClick={onSettingsOpen}
+            className="text-base text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
+            aria-label="Open settings"
+          >
+            ⚙️
+          </button>
+        </div>
+      </aside>
 
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <p className="text-base text-gray-400 dark:text-gray-600">WaiChat</p>
-        <button
-          onClick={onSettingsOpen}
-          className="text-base text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
-          aria-label="Open settings"
-        >
-          ⚙️
-        </button>
-      </div>
-    </aside>
+      <ConfirmModal
+        open={pendingDelete !== null}
+        title="Delete conversation?"
+        description={`"${pendingDelete?.title}" will be permanently deleted.`}
+        confirmLabel="Delete"
+        onConfirm={() => {
+          if (pendingDelete) onDelete(pendingDelete.id);
+          setPendingDelete(null);
+        }}
+        onCancel={() => setPendingDelete(null)}
+      />
+    </>
   );
 }
