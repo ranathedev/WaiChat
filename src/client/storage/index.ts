@@ -12,13 +12,12 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   created_at: number;
+  model?: string;
 }
 
 export interface StorageAdapter {
   getConversations(): Promise<Conversation[]>;
-  getConversation(
-    id: string,
-  ): Promise<{ conversation: Conversation; messages: Message[] } | null>;
+  getConversation(id: string): Promise<{ conversation: Conversation; messages: Message[] } | null>;
   createConversation(model: string): Promise<Conversation>;
   deleteConversation(id: string): Promise<void>;
   saveMessage(message: Omit<Message, "id" | "created_at">): Promise<Message>;

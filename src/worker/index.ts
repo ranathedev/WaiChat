@@ -41,8 +41,7 @@ function scoreModel(id: string): number {
   // Penalize old models
   if (id.includes("v0.1") || id.includes("v0.2")) score -= 20;
   if (id.includes("llama-2")) score -= 30;
-  if (id.includes("1.5b") || id.includes("0.5b") || id.includes("1.1b"))
-    score -= 15;
+  if (id.includes("1.5b") || id.includes("0.5b") || id.includes("1.1b")) score -= 15;
   if (id.includes("lora")) score -= 10;
 
   return score;
@@ -181,10 +180,10 @@ app.post("/api/title", async (c) => {
   const title = await generateTitle(c.env.AI, message);
   return c.json({ title });
 });
+
 app.post("/api/chat", async (c) => {
   const body = await c.req.json<ChatRequest>();
-  const { conversation_id, model, messages, storage_mode, system_prompt } =
-    body;
+  const { conversation_id, model, messages, storage_mode, system_prompt } = body;
   const isCloud = storage_mode !== "local";
   const now = Date.now();
 
@@ -211,11 +210,8 @@ app.post("/api/chat", async (c) => {
       );
     }
   }
-  const stream = await streamAiResponse(
-    c.env.AI,
-    model as any,
-    messagesWithSystem,
-  );
+
+  const stream = await streamAiResponse(c.env.AI, model as any, messagesWithSystem);
 
   if (isCloud) {
     const [streamForClient, streamForSave] = stream.tee();
@@ -224,6 +220,7 @@ app.post("/api/chat", async (c) => {
     const savePromise = saveAssistantMessage(
       c.env.DB,
       conversation_id,
+      model,
       streamForSave,
     ).then(() => updateConversationTimestamp(c.env.DB, conversation_id));
 
@@ -248,6 +245,7 @@ app.post("/api/chat", async (c) => {
 async function saveAssistantMessage(
   db: D1Database,
   conversationId: string,
+  model: string,
   stream: ReadableStream,
 ): Promise<void> {
   const reader = stream.getReader();
@@ -285,18 +283,15 @@ async function saveAssistantMessage(
   }
 
   if (fullContent) {
-    await db
-      .prepare(
-        "INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)",
-      )
-      .bind(
-        crypto.randomUUID(),
-        conversationId,
-        "assistant",
-        fullContent,
-        Date.now(),
-      )
-      .run();
+    // Re-use our saveMessage helper so the DB logic is centralized!
+    await saveMessage(db, {
+      id: crypto.randomUUID(),
+      conversation_id: conversationId,
+      role: "assistant",
+      content: fullContent,
+      created_at: Date.now(),
+      model,
+    });
   }
 }
 

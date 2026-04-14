@@ -29,7 +29,6 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-close active chat and clear errors when storage mode changes
   useEffect(() => {
     setActiveConversation(null);
     setMessages([]);
@@ -108,6 +107,7 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
         role: "assistant",
         content: "",
         created_at: Date.now(),
+        model,
       };
 
       setMessages((prev) => [...prev, userMessage, assistantMessage]);
@@ -178,6 +178,7 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
           conversation_id: conversationId,
           role: "assistant",
           content: fullContent,
+          model,
         });
 
         if (messages.length === 0 && storageMode === "local") {
