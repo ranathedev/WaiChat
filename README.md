@@ -115,11 +115,11 @@ This project follows the [Contributor Covenant](https://www.contributor-covenant
 
 Read our [contributing guide](./CONTRIBUTING.md) to learn about our development process, how to propose bug fixes and improvements, and how to build and test your changes to the project.
 
-### Issues
+### Issues & Roadmap
 
-Feel free to submit issues and enhancement requests. Use the template provided when creating an issue to ensure your request is clear and actionable.
+We build in public! All active development, upcoming features, and known bugs are tracked on our **[WaiChat Public Roadmap](https://github.com/users/ranajahanzaib/projects/33)**.
 
-See the open issues for a complete list of proposed features (and known issues).
+Feel free to submit issues and enhancement requests. Use the template provided when creating an issue to ensure your request is clear and actionable. If you are looking for something to work on, check out the **Bug Tracker** or **To Do** columns on the project board.
 
 ## [License](./LICENSE)
 
