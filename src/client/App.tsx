@@ -53,17 +53,27 @@ export default function App() {
     loadConversations();
   }, [loadConversations]);
 
-  // Close storage dropdown when clicking outside
+  // Close storage dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (!(e.target as Element).closest(".storage-dropdown-container")) {
+      if (!(e.target instanceof Element) || !e.target.closest(".storage-dropdown-container")) {
         setStorageDropdownOpen(false);
       }
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setStorageDropdownOpen(false);
+    };
+
     if (storageDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [storageDropdownOpen]);
 
   const closeSidebarOnMobile = () => {
@@ -178,6 +188,8 @@ export default function App() {
               onClick={() => setStorageDropdownOpen(!storageDropdownOpen)}
               className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg px-2 md:px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               aria-label="Toggle storage mode"
+              aria-expanded={storageDropdownOpen}
+              aria-haspopup="true"
             >
               <span className="text-base md:text-sm leading-none">
                 {storageMode === "cloud" ? "☁️" : "💾"}
@@ -191,6 +203,7 @@ export default function App() {
             </button>
 
             <div
+              role="menu"
               className={`absolute right-0 top-full mt-1 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden transition-all duration-200 z-10 origin-top-right ${
                 storageDropdownOpen
                   ? "opacity-100 scale-100 visible"
@@ -200,6 +213,7 @@ export default function App() {
               {(["cloud", "local"] as StorageMode[]).map((mode) => (
                 <button
                   key={mode}
+                  role="menuitem"
                   onClick={() => handleStorageToggle(mode)}
                   className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                     storageMode === mode ? "bg-indigo-50 dark:bg-indigo-950" : ""
