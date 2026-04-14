@@ -19,7 +19,7 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
     try {
       await navigator.clipboard.writeText(content);
       setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
+      setTimeout(() => setCopiedId((prev) => (prev === id ? null : prev)), 2000);
     } catch (err) {
       console.error("Failed to copy text: ", err);
     }
@@ -85,10 +85,11 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
             )}
           </div>
 
+          {/* Copy Button */}
           {m.content && (
             <button
               onClick={() => handleCopy(m.id, m.content)}
-              className="mt-1.5 px-2 py-1 text-[11px] font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
+              className="mt-1.5 px-2 py-1 text-[11px] font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
               aria-label="Copy message"
             >
               {copiedId === m.id ? (
