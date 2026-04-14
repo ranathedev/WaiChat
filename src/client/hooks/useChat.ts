@@ -34,6 +34,7 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
     setActiveConversation(null);
     setMessages([]);
     setError(null);
+    setIsStreaming(false);
   }, [storageMode]);
 
   const loadConversations = useCallback(async () => {
