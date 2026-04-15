@@ -25,7 +25,7 @@ export default function Sidebar({
   onDelete,
   onSettingsOpen,
   currentMode,
-  savedMode,
+  savedMode, // Kept in props to satisfy the interface and App.tsx
 }: SidebarProps) {
   const [pendingDelete, setPendingDelete] = useState<Conversation | null>(null);
 
@@ -68,36 +68,30 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Explicit split-button flow to the Sidebar for "New Chat" actions when a user views a deep link
-          that differs from their saved default storage mode. The user can now seamlessly opt to return to
-          their default workspace or explicitly create a new chat in the temporary storage mode they are viewing,
-          preventing accidental database pollution. */}
-        <div className="px-4 pb-4 flex flex-col gap-2.5">
-          {currentMode === savedMode ? (
-            <button
-              onClick={() => onNew(currentMode)}
-              className="flex items-center gap-2 w-full bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border-[0.5px] border-black/10 dark:border-white/10 text-gray-900 dark:text-white/95 rounded-xl px-4 py-2.5 text-[13px] md:text-sm font-medium shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.1)] transition-all"
-            >
-              <span className="text-lg font-light leading-none">+</span> New Chat
-            </button>
-          ) : (
-            <>
+        {/* Workspace Storage Switcher (Pill Tabs) */}
+        <div className="px-4 pb-4">
+          <div className="flex rounded-full bg-black/5 dark:bg-black/20 p-1 border-[0.5px] border-black/5 dark:border-white/10">
+            {(["cloud", "local"] as StorageMode[]).map((mode) => (
               <button
-                onClick={() => onNew(savedMode)}
-                className="flex items-center gap-2 w-full bg-[#0A84FF] hover:bg-[#0070E0] text-white rounded-xl px-4 py-2.5 text-[13px] md:text-sm font-medium shadow-[0_1px_2px_rgba(0,0,0,0.1)] transition-all"
-                title={`Return to your default ${savedMode} workspace`}
+                key={mode}
+                onClick={() => {
+                  if (currentMode !== mode) onNew(mode);
+                }}
+                className={`flex-1 py-1.5 text-[13px] md:text-sm font-medium rounded-full transition-all duration-200 ${
+                  currentMode === mode
+                    ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white/95 shadow-sm cursor-default"
+                    : "text-gray-500 hover:text-gray-900 hover:bg-black/5 dark:text-white/65 dark:hover:text-white/95 dark:hover:bg-white/5 cursor-pointer"
+                }`}
+                title={
+                  currentMode === mode
+                    ? `${mode === "cloud" ? "Cloud" : "Local"} Workspace`
+                    : `Switch to ${mode === "cloud" ? "Cloud" : "Local"} Workspace`
+                }
               >
-                New Chat in {savedMode === "cloud" ? "☁️ Cloud" : "💾 Local"}
+                {mode === "cloud" ? "Cloud" : "Local"}
               </button>
-              <button
-                onClick={() => onNew(currentMode)}
-                className="flex items-center gap-2 w-full bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border-[0.5px] border-black/10 dark:border-white/10 text-gray-900 dark:text-white/95 rounded-xl px-4 py-2.5 text-[13px] md:text-sm font-medium transition-all"
-                title={`Create a new chat in the current temporary ${currentMode} workspace`}
-              >
-                New in {currentMode === "cloud" ? "☁️ Cloud" : "💾 Local"}
-              </button>
-            </>
-          )}
+            ))}
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 pb-2 space-y-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-black/10 dark:[&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
@@ -162,7 +156,14 @@ export default function Sidebar({
             className="w-8 h-8 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-black/5 dark:text-white/65 dark:hover:text-white/95 dark:hover:bg-white/5 transition-colors focus:outline-none cursor-pointer"
             title="Settings"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 stroke-2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5 stroke-2"
+            >
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
