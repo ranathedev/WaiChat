@@ -304,7 +304,7 @@ export default function MessageList({ messages, isStreaming, onSelectPrompt }: M
           className={`group flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
         >
           <div
-            className={`max-w-[85%] md:max-w-[75%] rounded-[20px] px-5 py-4 text-[15px] md:text-base leading-relaxed shadow-[0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.1)] ${
+            className={`max-w-[85%] md:max-w-[75%] rounded-[20px] px-5 py-4 text-[15px] md:text-base leading-relaxed ${
               m.role === "user"
                 ? "bg-[#0A84FF] text-white rounded-br-sm"
                 : "bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 text-gray-900 dark:text-white/95 rounded-bl-sm backdrop-blur-md"
@@ -325,8 +325,8 @@ export default function MessageList({ messages, isStreaming, onSelectPrompt }: M
                 </span>
               ) : (
                 m.model && (
-                  <div className="mt-3 text-xs text-gray-400 dark:text-white/40 font-mono tracking-wide uppercase">
-                    {m.model.split("/").pop()}
+                  <div className="mt-3 text-xs text-gray-400 dark:text-white/40 capitalize">
+                    {m.model.split("/").pop()?.replaceAll("-", " ")}
                   </div>
                 )
               ))}
