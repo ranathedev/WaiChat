@@ -29,6 +29,7 @@ export default function App() {
     selectConversation,
     newConversation,
     deleteConversation,
+    clearConversation,
     sendMessage,
   } = useChat(storageMode);
 
@@ -52,6 +53,43 @@ export default function App() {
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
+
+  // Check the URL on the very first render
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.startsWith("/c/")) {
+      const id = path.slice(3);
+      selectConversation(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Browser Back/Forward: Listen to history pops
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.startsWith("/c/")) {
+        selectConversation(path.slice(3));
+      } else {
+        clearConversation();
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectConversation, clearConversation]);
+
+  // Update the URL when the active chat changes
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    if (activeConversation) {
+      const expectedPath = `/c/${activeConversation.id}`;
+      if (currentPath !== expectedPath) {
+        window.history.pushState({}, "", expectedPath);
+      }
+    } else if (currentPath !== "/") {
+      window.history.pushState({}, "", "/");
+    }
+  }, [activeConversation]);
 
   // Close storage dropdown when clicking outside or pressing Escape
   useEffect(() => {
