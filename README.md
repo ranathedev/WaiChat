@@ -6,32 +6,35 @@
 
 A Private, Serverless AI Chat App built on [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/). Free to run, yours to own, one click to deploy. No backend server, no third-party services, no monthly bills. Deploy in one click and start chatting.
 
-> **Alpha Software** - WaiChat is under active development. Core chat functionality works, but some features are incomplete (auth, UI improvements, mobile layout). Use for personal/testing purposes only.
+> **Alpha Software** - _WaiChat is under active development. Core chat functionality works, but some features are incomplete (auth, UX/UI improvements). Use for personal/testing purposes only. You can track progress or suggest feature/fixes on this [page](https://github.com/users/ranajahanzaib/projects/33/views/3)._
 >
-> WaiChat is short for Workers AI Chat
+> _**WaiChat is short for Workers AI Chat**_
 
 https://github.com/user-attachments/assets/e62c3a84-aa5d-4d24-be3f-f162115db89a
 
 
-<img width="1435" height="1182" alt="Screenshot 2026-04-12 at 11 23 44 PM" src="https://github.com/user-attachments/assets/7420a62f-09c9-4459-9d3d-9b6fca424c44" />
+<img width="1432" height="1053" alt="Screenshot 2026-04-15 at 10 36 11 PM" src="https://github.com/user-attachments/assets/09dd3b82-eeb7-4175-ad61-cd029e3926f3" />
 
+<img width="1553" height="1117" alt="Screenshot 2026-04-15 at 10 37 58 PM" src="https://github.com/user-attachments/assets/fb8456b4-74c7-4b1b-ba2d-06473990f628" />
 
 
 ## Features
 
 - **One-click deploy** - runs entirely on Cloudflare's free tier
-- **Multiple AI models** - switch between available Workers AI models on the fly
-- **Streaming responses** - real-time output, no waiting
-- **Conversation history** - sidebar with past chats, auto-generated titles
-- **Flexible storage** - cloud (Cloudflare D1) or local (browser localStorage)
-- **Auth-ready** - works out of the box with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/) for private deployments
+- **Modern interface** - responsive, native-feeling glassmorphic UI with Light, Dark, and System themes
+- **Multiple AI models** - switch between available Workers AI models on the fly with in-chat attribution
+- **Smart streaming** - real-time output featuring beautifully parsed, collapsible `<think>` blocks for reasoning models
+- **Flexible workspaces** - instantly toggle between cloud (Cloudflare D1) and local (browser localStorage) environments
+- **Chat management** - collapsible sidebar, auto-generated titles, one-click copy actions, and deep-linked URLs
+- **Auth-ready** - works out of the box with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/) for zero-trust private deployments
+
 
 ## Deploy
 
 ### One-click
 The easiest way to self-host WaiChat is via the Deploy to Cloudflare button below.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/WaiChat/tree/v0.1.1-alpha)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/WaiChat/tree/v0.1.2-alpha)
 
 Click the button and Cloudflare handles everything automatically - no CLI, no config files to edit, no manual steps required. Behind the scenes it forks the repo into your GitHub account, provisions a D1 database and Workers AI binding, then builds and deploys the app to `https://waichat.<your-subdomain>.workers.dev`.
 
