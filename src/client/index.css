@@ -1,1 +1,4 @@
 @import "tailwindcss";
+
+/* Override default OS dark mode to look for the .dark class on the <html> tag instead */
+@custom-variant dark (&:where(.dark, .dark *));

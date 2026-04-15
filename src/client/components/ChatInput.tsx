@@ -42,7 +42,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
       <div className="w-full max-w-[720px] relative">
         <form
           onSubmit={handleSend}
-          className="relative flex flex-col bg-black/25 focus-within:bg-black/35 border-[0.5px] border-white/10 focus-within:border-white/20 rounded-2xl p-3 shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-200"
+          className="relative flex flex-col bg-white/60 dark:bg-black/25 focus-within:bg-white/80 dark:focus-within:bg-black/35 border-[0.5px] border-black/10 dark:border-white/10 focus-within:border-black/20 dark:focus-within:border-white/20 rounded-2xl p-3 shadow-[0_4px_24px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-200"
         >
           <textarea
             ref={textareaRef}
@@ -52,13 +52,13 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
             placeholder="Message WaiChat..."
             disabled={disabled}
             rows={1}
-            className="w-full bg-transparent border-none text-white/95 text-base outline-none resize-none leading-relaxed min-h-[24px] max-h-[200px] pr-12 placeholder:text-white/40 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full"
+            className="w-full bg-transparent border-none text-gray-900 dark:text-white/95 text-base outline-none resize-none leading-relaxed min-h-[24px] max-h-[200px] pr-12 placeholder:text-gray-400 dark:placeholder:text-white/40 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-black/10 dark:[&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full"
           />
 
           <button
             type="submit"
             disabled={disabled || !value.trim()}
-            className="absolute right-3 top-2.5 w-8 h-8 bg-white/10 border-[0.5px] border-white/10 rounded-full flex items-center justify-center text-white/80 hover:bg-white hover:text-black hover:scale-105 disabled:opacity-40 disabled:hover:bg-white/10 disabled:hover:text-white/80 disabled:hover:scale-100 transition-all duration-200 cursor-pointer"
+            className="absolute right-3 top-2.5 w-8 h-8 bg-black/5 dark:bg-white/10 border-[0.5px] border-black/10 dark:border-white/10 rounded-full flex items-center justify-center text-gray-500 dark:text-white/80 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:scale-105 disabled:opacity-40 disabled:hover:bg-black/5 disabled:hover:text-gray-500 dark:disabled:hover:bg-white/10 dark:disabled:hover:text-white/80 disabled:hover:scale-100 transition-all duration-200 cursor-pointer"
             aria-label="Send message"
           >
             <svg
@@ -72,10 +72,10 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
             </svg>
           </button>
 
-          <div className="flex justify-between items-center mt-3 border-t-[0.5px] border-white/5 pt-2">
+          <div className="flex justify-between items-center mt-3 border-t-[0.5px] border-black/5 dark:border-white/5 pt-2">
             <button
               type="button"
-              className="flex items-center gap-2 bg-transparent border-none text-white/50 hover:text-white/95 text-[13px] md:text-sm font-medium cursor-pointer transition-colors focus:outline-none"
+              className="flex items-center gap-2 bg-transparent border-none text-gray-500 hover:text-gray-900 dark:text-white/50 dark:hover:text-white/95 text-[13px] md:text-sm font-medium cursor-pointer transition-colors focus:outline-none"
               aria-label="Attach file"
             >
               <svg
@@ -91,7 +91,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
           </div>
         </form>
 
-        <div className="text-center text-xs text-white/40 mt-3 hidden md:block tracking-wide">
+        <div className="text-center text-xs text-gray-400 dark:text-white/40 mt-3 hidden md:block tracking-wide">
           Press Enter to send · Shift + Enter for new line
         </div>
       </div>

@@ -79,9 +79,9 @@ function ThoughtParser({ content }: { content: string }) {
       <details
         open={isOpen}
         onToggle={handleToggle}
-        className="group border-[0.5px] border-white/10 rounded-lg bg-white/5"
+        className="group border-[0.5px] border-black/10 dark:border-white/10 rounded-lg bg-black/5 dark:bg-white/5"
       >
-        <summary className="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-[13px] md:text-sm font-medium text-white/65 hover:text-white/95 select-none list-none">
+        <summary className="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-[13px] md:text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-white/65 dark:hover:text-white/95 select-none list-none">
           <svg
             className="w-5 h-5 transition-transform group-open:rotate-90"
             fill="none"
@@ -105,20 +105,20 @@ function ThoughtParser({ content }: { content: string }) {
 
           {isThinking ? (
             <span className="flex gap-1 ml-1">
-              <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0ms]" />
-              <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:150ms]" />
-              <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:300ms]" />
+              <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-white/40 rounded-full animate-bounce [animation-delay:0ms]" />
+              <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-white/40 rounded-full animate-bounce [animation-delay:150ms]" />
+              <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-white/40 rounded-full animate-bounce [animation-delay:300ms]" />
             </span>
           ) : (
             <button
               onClick={handleCopyThought}
-              className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs uppercase tracking-wider px-2.5 py-1 rounded bg-white/10 hover:bg-white/20"
+              className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs uppercase tracking-wider px-2.5 py-1 rounded bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
           )}
         </summary>
-        <div className="px-4 pb-4 pt-2 text-xs md:text-sm text-white/65 whitespace-pre-wrap border-t-[0.5px] border-white/10 italic leading-relaxed">
+        <div className="px-4 pb-4 pt-2 text-xs md:text-sm text-gray-600 dark:text-white/65 whitespace-pre-wrap border-t-[0.5px] border-black/10 dark:border-white/10 italic leading-relaxed">
           {thoughtContent}
         </div>
       </details>
@@ -137,11 +137,11 @@ function MarkdownRenderer({ content }: { content: string }) {
         code: ({ children, className }) => {
           const isBlock = className?.includes("language-");
           return isBlock ? (
-            <pre className="bg-[#141416]/80 border-[0.5px] border-white/10 text-white/95 rounded-lg p-4 overflow-x-auto my-3 text-sm">
+            <pre className="bg-gray-100/80 border-[0.5px] border-black/10 text-gray-900 dark:bg-[#141416]/80 dark:border-white/10 dark:text-white/95 rounded-lg p-4 overflow-x-auto my-3 text-sm">
               <code>{children}</code>
             </pre>
           ) : (
-            <code className="bg-white/10 rounded px-1.5 py-0.5 text-sm font-mono text-[#0A84FF]">
+            <code className="bg-black/5 dark:bg-white/10 rounded px-1.5 py-0.5 text-sm font-mono text-[#0A84FF]">
               {children}
             </code>
           );
@@ -199,16 +199,16 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
         </div>
-        <h1 className="text-2xl md:text-3xl font-semibold text-white/95 tracking-tight text-center mb-3">
+        <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white/95 tracking-tight text-center mb-3">
           Let's explore an idea.
         </h1>
-        <p className="text-sm md:text-base text-white/65 text-center mb-12 max-w-[450px] leading-relaxed">
+        <p className="text-sm md:text-base text-gray-600 dark:text-white/65 text-center mb-12 max-w-[450px] leading-relaxed">
           Lightning-fast AI at the edge. Powered by Cloudflare for limitless, zero-latency
           conversations.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-[800px] mb-10">
-          <div className="bg-white/5 border-[0.5px] border-white/10 hover:border-white/20 hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+          <div className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
             <div className="text-[#0A84FF] mb-4">
               <svg
                 viewBox="0 0 24 24"
@@ -220,14 +220,14 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
                 <polyline points="8 6 2 12 8 18"></polyline>
               </svg>
             </div>
-            <div className="text-[15px] md:text-base font-medium text-white/95 mb-1.5">
+            <div className="text-[15px] md:text-base font-medium text-gray-900 dark:text-white/95 mb-1.5">
               Refactor Code
             </div>
-            <div className="text-xs md:text-sm text-white/40 leading-relaxed">
+            <div className="text-xs md:text-sm text-gray-500 dark:text-white/40 leading-relaxed">
               Debug, explain, or improve your programming snippets.
             </div>
           </div>
-          <div className="bg-white/5 border-[0.5px] border-white/10 hover:border-white/20 hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+          <div className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
             <div className="text-[#0A84FF] mb-4">
               <svg
                 viewBox="0 0 24 24"
@@ -242,14 +242,14 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
                 <polyline points="10 9 9 9 8 9"></polyline>
               </svg>
             </div>
-            <div className="text-[15px] md:text-base font-medium text-white/95 mb-1.5">
+            <div className="text-[15px] md:text-base font-medium text-gray-900 dark:text-white/95 mb-1.5">
               Summarize Texts
             </div>
-            <div className="text-xs md:text-sm text-white/40 leading-relaxed">
+            <div className="text-xs md:text-sm text-gray-500 dark:text-white/40 leading-relaxed">
               Quickly distill long documents or articles down to the essentials.
             </div>
           </div>
-          <div className="bg-white/5 border-[0.5px] border-white/10 hover:border-white/20 hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+          <div className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
             <div className="text-[#0A84FF] mb-4">
               <svg
                 viewBox="0 0 24 24"
@@ -262,10 +262,10 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
               </svg>
             </div>
-            <div className="text-[15px] md:text-base font-medium text-white/95 mb-1.5">
+            <div className="text-[15px] md:text-base font-medium text-gray-900 dark:text-white/95 mb-1.5">
               Explore Concepts
             </div>
-            <div className="text-xs md:text-sm text-white/40 leading-relaxed">
+            <div className="text-xs md:text-sm text-gray-500 dark:text-white/40 leading-relaxed">
               Dive into science, physics, history, or anything else you're curious about.
             </div>
           </div>
@@ -275,17 +275,17 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+    <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-black/10 dark:[&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
       {messages.map((m) => (
         <div
           key={m.id}
           className={`group flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
         >
           <div
-            className={`max-w-[85%] md:max-w-[75%] rounded-[20px] px-5 py-4 text-[15px] md:text-base leading-relaxed shadow-[0_2px_10px_rgba(0,0,0,0.1)] ${
+            className={`max-w-[85%] md:max-w-[75%] rounded-[20px] px-5 py-4 text-[15px] md:text-base leading-relaxed shadow-[0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.1)] ${
               m.role === "user"
                 ? "bg-[#0A84FF] text-white rounded-br-sm"
-                : "bg-white/5 border-[0.5px] border-white/10 text-white/95 rounded-bl-sm backdrop-blur-md"
+                : "bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 text-gray-900 dark:text-white/95 rounded-bl-sm backdrop-blur-md"
             }`}
           >
             {m.role === "assistant" ? (
@@ -297,13 +297,13 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
             {m.role === "assistant" &&
               (isStreaming && m.content === "" ? (
                 <span className="inline-flex gap-1 mt-2">
-                  <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:300ms]" />
+                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-white/40 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-white/40 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-white/40 rounded-full animate-bounce [animation-delay:300ms]" />
                 </span>
               ) : (
                 m.model && (
-                  <div className="mt-3 text-xs text-white/40 font-mono tracking-wide uppercase">
+                  <div className="mt-3 text-xs text-gray-400 dark:text-white/40 font-mono tracking-wide uppercase">
                     {m.model.split("/").pop()}
                   </div>
                 )
@@ -313,7 +313,7 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
           {m.content && (
             <button
               onClick={() => handleCopy(m.id, m.content)}
-              className="mt-2 px-3 py-1.5 text-xs font-medium text-white/40 hover:text-white/80 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1.5 cursor-pointer"
+              className="mt-2 px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white/80 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1.5 cursor-pointer"
               aria-label="Copy message"
             >
               {copiedId === m.id ? (

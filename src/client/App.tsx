@@ -11,9 +11,50 @@ import SettingsModal from "./components/SettingsModal";
 const STORAGE_MODE_KEY = "waichat:storage-mode";
 const SYSTEM_PROMPT_KEY = "waichat:system-prompt";
 const DEFAULT_MODEL_KEY = "waichat:default-model";
+export const THEME_KEY = "waichat:theme";
 const MOBILE_BREAKPOINT = 768;
 
+export type ThemeMode = "system" | "light" | "dark";
+
 export default function App() {
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem(THEME_KEY) as ThemeMode) || "system";
+    }
+    return "system";
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(theme);
+    }
+
+    // Instantly save to localStorage whenever theme changes
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (theme !== "system") return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(mediaQuery.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme]);
+
   // Track the actual saved preference in localStorage separately
   const [savedStorageMode, setSavedStorageMode] = useState<StorageMode>(() => {
     if (typeof window !== "undefined") {
@@ -222,23 +263,27 @@ export default function App() {
   };
 
   return (
-    <div
-      className="relative flex h-screen w-full overflow-hidden font-sans text-white/95"
-      style={{
-        background:
-          "radial-gradient(circle at 15% 50%, #1a1e36, #000 50%), radial-gradient(circle at 85% 30%, #2a1635, #000 50%)",
-        backgroundColor: "#000",
-      }}
-    >
+    <div className="relative flex h-screen w-full overflow-hidden font-sans text-gray-900 dark:text-white/95">
+      {/* Full-screen base layers */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-transparent dark:to-transparent z-0 transition-colors duration-300" />
+      <div
+        className="absolute inset-0 z-0 hidden dark:block transition-opacity duration-300"
+        style={{
+          background:
+            "radial-gradient(circle at 15% 50%, #1a1e36, #000 50%), radial-gradient(circle at 85% 30%, #2a1635, #000 50%)",
+          backgroundColor: "#000",
+        }}
+      />
+
       {/* Full-screen glassmorphism base layer */}
-      <div className="absolute inset-0 bg-[#1e1e20]/75 backdrop-blur-[40px] backdrop-saturate-[180%] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-white/40 dark:bg-[#1e1e20]/75 backdrop-blur-[40px] backdrop-saturate-[180%] pointer-events-none z-0 transition-colors duration-300" />
 
       {/* Interactive Content Wrapper */}
       <div className="relative z-10 flex h-full w-full">
         {/* Mobile Backdrop Overlay */}
         {sidebarOpen && (
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm z-20 md:hidden transition-opacity"
+            className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-20 md:hidden transition-opacity"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -258,12 +303,12 @@ export default function App() {
 
         <main className="flex flex-col flex-1 min-w-0 h-full">
           {/* TOPBAR */}
-          <header className="flex items-center justify-between px-5 py-4 border-b-[0.5px] border-white/10 shrink-0">
+          <header className="flex items-center justify-between px-5 py-4 border-b-[0.5px] border-black/5 dark:border-white/10 shrink-0 transition-colors duration-300">
             <div className="flex items-center gap-3">
               {!sidebarOpen && (
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="w-8 h-8 rounded-md flex items-center justify-center text-white/65 hover:text-white/95 hover:bg-white/5 transition-colors focus:outline-none"
+                  className="w-8 h-8 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-black/5 dark:text-white/65 dark:hover:text-white/95 dark:hover:bg-white/5 transition-colors focus:outline-none"
                   aria-label="Open sidebar"
                 >
                   <svg
@@ -278,9 +323,9 @@ export default function App() {
                 </button>
               )}
 
-              <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border-[0.5px] border-white/10 rounded-full pl-3 pr-2 py-1.5 transition-all">
+              <div className="flex items-center gap-2 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border-[0.5px] border-black/5 dark:border-white/10 rounded-full pl-3 pr-2 py-1.5 transition-all">
                 <div className="w-2 h-2 rounded-full bg-[#0A84FF]"></div>
-                <div className="flex-1 min-w-0 text-xs md:text-sm font-medium text-white/65 [&_select]:text-white/65 [&_select]:bg-transparent [&_select]:border-none [&_select]:py-0 [&_select]:pl-0 [&_select]:pr-4 [&_select]:outline-none [&_select]:cursor-pointer [&_select]:appearance-none">
+                <div className="flex-1 min-w-0 text-xs md:text-sm font-medium text-gray-700 dark:text-white/65 [&_select]:text-gray-700 dark:[&_select]:text-white/65 [&_select]:bg-transparent [&_select]:border-none [&_select]:py-0 [&_select]:pl-0 [&_select]:pr-4 [&_select]:outline-none [&_select]:cursor-pointer [&_select]:appearance-none">
                   <ModelPicker
                     models={models}
                     value={model}
@@ -295,13 +340,13 @@ export default function App() {
               <div className="relative storage-dropdown-container shrink-0">
                 <button
                   onClick={() => setStorageDropdownOpen(!storageDropdownOpen)}
-                  className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border-[0.5px] border-white/10 rounded-full px-3 py-1.5 text-white/65 hover:text-white/95 text-xs md:text-sm font-medium cursor-pointer transition-all focus:outline-none"
+                  className="flex items-center gap-2 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border-[0.5px] border-black/5 dark:border-white/10 rounded-full px-3 py-1.5 text-gray-700 hover:text-gray-900 dark:text-white/65 dark:hover:text-white/95 text-xs md:text-sm font-medium cursor-pointer transition-all focus:outline-none"
                   aria-expanded={storageDropdownOpen}
                 >
                   {storageMode === "cloud" ? (
-                    <div className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_4px_rgba(52,199,89,0.5)]"></div>
+                    <div className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_4px_rgba(52,199,89,0.3)] dark:shadow-[0_0_4px_rgba(52,199,89,0.5)]"></div>
                   ) : (
-                    <div className="w-2 h-2 rounded-full bg-[#FF9F0A] shadow-[0_0_4px_rgba(255,159,10,0.5)]"></div>
+                    <div className="w-2 h-2 rounded-full bg-[#FF9F0A] shadow-[0_0_4px_rgba(255,159,10,0.3)] dark:shadow-[0_0_4px_rgba(255,159,10,0.5)]"></div>
                   )}
                   {storageMode === "cloud" ? "Cloud" : "Local"}
                   <svg className="w-3 h-3 ml-1" viewBox="0 0 12 12" fill="currentColor">
@@ -311,7 +356,7 @@ export default function App() {
 
                 <div
                   role="menu"
-                  className={`absolute right-0 top-full mt-2 w-64 bg-[#1e1e20]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-200 z-50 origin-top-right ${
+                  className={`absolute right-0 top-full mt-2 w-64 bg-white/95 dark:bg-[#1e1e20]/95 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-200 z-50 origin-top-right ${
                     storageDropdownOpen
                       ? "opacity-100 scale-100 visible"
                       : "opacity-0 scale-95 invisible"
@@ -322,7 +367,7 @@ export default function App() {
                       key={mode}
                       role="menuitem"
                       onClick={() => handleStorageToggle(mode)}
-                      className={`w-full flex items-start gap-3 px-4 py-3.5 text-left hover:bg-white/10 transition-colors ${
+                      className={`w-full flex items-start gap-3 px-4 py-3.5 text-left hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${
                         storageMode === mode ? "bg-[#0A84FF]/10" : ""
                       }`}
                     >
@@ -331,11 +376,15 @@ export default function App() {
                       </span>
                       <div>
                         <p
-                          className={`text-sm md:text-base font-medium ${storageMode === mode ? "text-[#0A84FF]" : "text-white/95"}`}
+                          className={`text-sm md:text-base font-medium ${
+                            storageMode === mode
+                              ? "text-[#0A84FF]"
+                              : "text-gray-900 dark:text-white/95"
+                          }`}
                         >
                           {mode === "cloud" ? "Cloud (D1)" : "Local (Browser)"}
                         </p>
-                        <p className="text-xs md:text-sm text-white/40 mt-0.5">
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-white/40 mt-0.5">
                           {mode === "cloud" ? "Syncs across devices" : "Stays in your browser"}
                         </p>
                       </div>
@@ -346,7 +395,7 @@ export default function App() {
 
               <button
                 onClick={() => handleNew(storageMode)}
-                className="w-8 h-8 rounded-md flex items-center justify-center text-white/65 hover:text-white/95 hover:bg-white/5 transition-colors"
+                className="w-8 h-8 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-black/5 dark:text-white/65 dark:hover:text-white/95 dark:hover:bg-white/5 transition-colors focus:outline-none"
                 title="New Chat"
               >
                 <svg
@@ -363,7 +412,7 @@ export default function App() {
           </header>
 
           {error && (
-            <div className="mx-6 mt-4 px-4 py-3 bg-red-900/30 border border-red-500/30 rounded-lg text-sm text-red-400">
+            <div className="mx-6 mt-4 px-4 py-3 bg-red-100/50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/30 rounded-lg text-sm text-red-600 dark:text-red-400">
               {error}
             </div>
           )}
@@ -383,6 +432,8 @@ export default function App() {
           onSystemPromptChange={handleSystemPromptChange}
           models={models}
           onClearConversations={handleClearConversations}
+          theme={theme}
+          onThemeChange={setTheme}
         />
       </div>
     </div>
