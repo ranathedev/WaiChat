@@ -24,6 +24,8 @@ export default function App() {
     return "system";
   });
 
+  const [pendingPrompt, setPendingPrompt] = useState("");
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -425,8 +427,17 @@ export default function App() {
             </div>
           )}
 
-          <MessageList messages={messages} isStreaming={isStreaming} />
-          <ChatInput onSend={handleSend} disabled={isStreaming} />
+          <MessageList
+            messages={messages}
+            isStreaming={isStreaming}
+            onSelectPrompt={setPendingPrompt}
+          />
+          <ChatInput
+            onSend={handleSend}
+            disabled={isStreaming}
+            initialValue={pendingPrompt}
+            onClearInitialValue={() => setPendingPrompt("")}
+          />
         </main>
 
         <SettingsModal

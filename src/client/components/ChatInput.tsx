@@ -3,11 +3,26 @@ import { useEffect, useRef, useState } from "react";
 interface ChatInputProps {
   onSend: (content: string) => void;
   disabled: boolean;
+  initialValue?: string;
+  onClearInitialValue?: () => void;
 }
 
-export default function ChatInput({ onSend, disabled }: ChatInputProps) {
+export default function ChatInput({
+  onSend,
+  disabled,
+  initialValue,
+  onClearInitialValue,
+}: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (initialValue) {
+      setValue(initialValue);
+      onClearInitialValue?.();
+      textareaRef.current?.focus();
+    }
+  }, [initialValue, onClearInitialValue]);
 
   // Auto-resize the textarea
   useEffect(() => {

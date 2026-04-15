@@ -5,6 +5,7 @@ import type { Message } from "../storage";
 interface MessageListProps {
   messages: Message[];
   isStreaming: boolean;
+  onSelectPrompt: (prompt: string) => void;
 }
 
 function ThoughtParser({ content }: { content: string }) {
@@ -160,7 +161,7 @@ function MarkdownRenderer({ content }: { content: string }) {
   );
 }
 
-export default function MessageList({ messages, isStreaming }: MessageListProps) {
+export default function MessageList({ messages, isStreaming, onSelectPrompt }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -208,7 +209,14 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-[800px] mb-10">
-          <div className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+          <div
+            onClick={() =>
+              onSelectPrompt(
+                "Can you help me refactor this code snippet to be more efficient and readable?\n\n[Paste code here]",
+              )
+            }
+            className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]"
+          >
             <div className="text-[#0A84FF] mb-4">
               <svg
                 viewBox="0 0 24 24"
@@ -227,7 +235,14 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
               Debug, explain, or improve your programming snippets.
             </div>
           </div>
-          <div className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+          <div
+            onClick={() =>
+              onSelectPrompt(
+                "Please provide a concise summary of the following text, highlighting the key takeaways:\n\n[Paste text here]",
+              )
+            }
+            className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]"
+          >
             <div className="text-[#0A84FF] mb-4">
               <svg
                 viewBox="0 0 24 24"
@@ -249,7 +264,14 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
               Quickly distill long documents or articles down to the essentials.
             </div>
           </div>
-          <div className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+          <div
+            onClick={() =>
+              onSelectPrompt(
+                "I'm curious about [Topic]. Can you explain the core concepts and why they matter?",
+              )
+            }
+            className="bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]"
+          >
             <div className="text-[#0A84FF] mb-4">
               <svg
                 viewBox="0 0 24 24"
