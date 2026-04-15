@@ -7,7 +7,6 @@ interface MessageListProps {
   isStreaming: boolean;
 }
 
-// Helper component to parse and format <think>...</think> blocks
 function ThoughtParser({ content }: { content: string }) {
   const [elapsed, setElapsed] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -80,11 +79,11 @@ function ThoughtParser({ content }: { content: string }) {
       <details
         open={isOpen}
         onToggle={handleToggle}
-        className="group border border-gray-200 dark:border-gray-700 rounded-lg bg-white/50 dark:bg-black/20"
+        className="group border-[0.5px] border-white/10 rounded-lg bg-white/5"
       >
-        <summary className="flex items-center gap-2 px-4 py-2 cursor-pointer text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 select-none list-none">
+        <summary className="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-[13px] md:text-sm font-medium text-white/65 hover:text-white/95 select-none list-none">
           <svg
-            className="w-4 h-4 transition-transform group-open:rotate-90"
+            className="w-5 h-5 transition-transform group-open:rotate-90"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -105,21 +104,21 @@ function ThoughtParser({ content }: { content: string }) {
           </span>
 
           {isThinking ? (
-            <span className="flex gap-0.5 ml-1">
-              <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-              <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-              <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+            <span className="flex gap-1 ml-1">
+              <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0ms]" />
+              <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:150ms]" />
+              <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:300ms]" />
             </span>
           ) : (
             <button
               onClick={handleCopyThought}
-              className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs uppercase tracking-wider px-2.5 py-1 rounded bg-white/10 hover:bg-white/20"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
           )}
         </summary>
-        <div className="px-4 pb-3 pt-1 text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap border-t border-gray-100 dark:border-gray-800 italic">
+        <div className="px-4 pb-4 pt-2 text-xs md:text-sm text-white/65 whitespace-pre-wrap border-t-[0.5px] border-white/10 italic leading-relaxed">
           {thoughtContent}
         </div>
       </details>
@@ -138,19 +137,21 @@ function MarkdownRenderer({ content }: { content: string }) {
         code: ({ children, className }) => {
           const isBlock = className?.includes("language-");
           return isBlock ? (
-            <pre className="bg-gray-900 dark:bg-black text-gray-100 rounded-lg p-3 overflow-x-auto my-2 text-xs">
+            <pre className="bg-[#141416]/80 border-[0.5px] border-white/10 text-white/95 rounded-lg p-4 overflow-x-auto my-3 text-sm">
               <code>{children}</code>
             </pre>
           ) : (
-            <code className="bg-gray-200 dark:bg-gray-700 rounded px-1 py-0.5 text-xs font-mono">
+            <code className="bg-white/10 rounded px-1.5 py-0.5 text-sm font-mono text-[#0A84FF]">
               {children}
             </code>
           );
         },
-        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+        p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+        ul: ({ children }) => (
+          <ul className="list-disc list-inside mb-3 space-y-1.5">{children}</ul>
+        ),
         ol: ({ children }) => (
-          <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>
+          <ol className="list-decimal list-inside mb-3 space-y-1.5">{children}</ol>
         ),
       }}
     >
@@ -180,26 +181,111 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
     }
   };
 
+  // Empty State Hero Design
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-600">
-        <p className="text-sm">Send a message to get started</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto w-full">
+        <div
+          className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mb-8 shadow-[0_8px_24px_rgba(10,132,255,0.3),inset_0_1px_0_rgba(255,255,255,0.4)]"
+          style={{ background: "linear-gradient(135deg, #0A84FF, #5E5CE6)" }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="w-10 h-10 text-white"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <h1 className="text-2xl md:text-3xl font-semibold text-white/95 tracking-tight text-center mb-3">
+          Let's explore an idea.
+        </h1>
+        <p className="text-sm md:text-base text-white/65 text-center mb-12 max-w-[450px] leading-relaxed">
+          Lightning-fast AI at the edge. Powered by Cloudflare for limitless, zero-latency
+          conversations.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-[800px] mb-10">
+          <div className="bg-white/5 border-[0.5px] border-white/10 hover:border-white/20 hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+            <div className="text-[#0A84FF] mb-4">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                className="w-6 h-6 stroke-[1.5]"
+              >
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <div className="text-[15px] md:text-base font-medium text-white/95 mb-1.5">
+              Refactor Code
+            </div>
+            <div className="text-xs md:text-sm text-white/40 leading-relaxed">
+              Debug, explain, or improve your programming snippets.
+            </div>
+          </div>
+          <div className="bg-white/5 border-[0.5px] border-white/10 hover:border-white/20 hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+            <div className="text-[#0A84FF] mb-4">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                className="w-6 h-6 stroke-[1.5]"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <div className="text-[15px] md:text-base font-medium text-white/95 mb-1.5">
+              Summarize Texts
+            </div>
+            <div className="text-xs md:text-sm text-white/40 leading-relaxed">
+              Quickly distill long documents or articles down to the essentials.
+            </div>
+          </div>
+          <div className="bg-white/5 border-[0.5px] border-white/10 hover:border-white/20 hover:bg-white/10 rounded-xl p-5 cursor-pointer backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+            <div className="text-[#0A84FF] mb-4">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                className="w-6 h-6 stroke-[1.5]"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <div className="text-[15px] md:text-base font-medium text-white/95 mb-1.5">
+              Explore Concepts
+            </div>
+            <div className="text-xs md:text-sm text-white/40 leading-relaxed">
+              Dive into science, physics, history, or anything else you're curious about.
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+    <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
       {messages.map((m) => (
         <div
           key={m.id}
           className={`group flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
         >
           <div
-            className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm ${
+            className={`max-w-[85%] md:max-w-[75%] rounded-[20px] px-5 py-4 text-[15px] md:text-base leading-relaxed shadow-[0_2px_10px_rgba(0,0,0,0.1)] ${
               m.role === "user"
-                ? "bg-indigo-600 text-white rounded-br-sm"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-sm"
+                ? "bg-[#0A84FF] text-white rounded-br-sm"
+                : "bg-white/5 border-[0.5px] border-white/10 text-white/95 rounded-bl-sm backdrop-blur-md"
             }`}
           >
             {m.role === "assistant" ? (
@@ -208,37 +294,35 @@ export default function MessageList({ messages, isStreaming }: MessageListProps)
               <p className="whitespace-pre-wrap">{m.content}</p>
             )}
 
-            {/* Show streaming indicator OR model attribution */}
             {m.role === "assistant" &&
               (isStreaming && m.content === "" ? (
                 <span className="inline-flex gap-1 mt-2">
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                  <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:300ms]" />
                 </span>
               ) : (
                 m.model && (
-                  <div className="mt-3 text-[10px] text-gray-400 dark:text-gray-500 font-mono tracking-wide uppercase">
+                  <div className="mt-3 text-xs text-white/40 font-mono tracking-wide uppercase">
                     {m.model.split("/").pop()}
                   </div>
                 )
               ))}
           </div>
 
-          {/* Master Message Copy Button */}
           {m.content && (
             <button
               onClick={() => handleCopy(m.id, m.content)}
-              className="mt-1.5 px-2 py-1 text-[11px] font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
+              className="mt-2 px-3 py-1.5 text-xs font-medium text-white/40 hover:text-white/80 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1.5 cursor-pointer"
               aria-label="Copy message"
             >
               {copiedId === m.id ? (
                 <>
-                  <span className="text-green-500 dark:text-green-400">✓</span> Copied
+                  <span className="text-[#34C759]">✓</span> Copied
                 </>
               ) : (
                 <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

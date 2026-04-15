@@ -67,54 +67,57 @@ export default function SettingsModal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === overlayRef.current) handleCancel(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-opacity"
+      onClick={(e) => {
+        if (e.target === overlayRef.current) handleCancel();
+      }}
     >
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
-
+      <div className="w-full max-w-md bg-[#1e1e20]/95 backdrop-blur-2xl border-[0.5px] border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Settings</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b-[0.5px] border-white/10 shrink-0">
+          <h2 className="text-base md:text-lg font-semibold text-white/95 tracking-tight">
+            Settings
+          </h2>
           <button
             onClick={handleCancel}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="text-white/40 hover:text-white/95 transition-colors focus:outline-none"
             aria-label="Close settings"
           >
-            ✕
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 stroke-2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
         {/* Scrollable body */}
-        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-8">
-
+        <div className="overflow-y-auto flex-1 px-6 py-6 space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
           {/* Preferences */}
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-600 mb-4">
+            <h3 className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">
               Preferences
             </h3>
             <div className="space-y-5">
-
-              {/* Storage mode */}
+              {/* Storage mode Segmented Control */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Storage
+                <label className="block text-[13px] md:text-sm font-medium text-white/80 mb-2">
+                  Storage Mode
                 </label>
-                <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="flex rounded-xl bg-black/20 p-1 border-[0.5px] border-white/10">
                   {(["cloud", "local"] as StorageMode[]).map((mode) => (
                     <button
                       key={mode}
                       onClick={() => setDraftStorageMode(mode)}
-                      className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                      className={`flex-1 py-1.5 text-[13px] md:text-sm font-medium rounded-lg transition-all duration-200 ${
                         draftStorageMode === mode
-                          ? "bg-indigo-600 text-white"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          ? "bg-white/15 text-white/95 shadow-sm"
+                          : "text-white/65 hover:text-white/95 hover:bg-white/5"
                       }`}
                     >
                       {mode === "cloud" ? "☁️ Cloud (D1)" : "💾 Local (Browser)"}
                     </button>
                   ))}
                 </div>
-                <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-600">
+                <p className="mt-2 text-xs text-white/40 leading-relaxed">
                   {draftStorageMode === "cloud"
                     ? "Conversations saved to Cloudflare D1. Persists across devices."
                     : "Conversations saved in your browser. Never leaves your device."}
@@ -123,23 +126,25 @@ export default function SettingsModal({
 
               {/* Default model */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-[13px] md:text-sm font-medium text-white/80 mb-2">
                   Default Model
                 </label>
                 <select
                   value={draftModel}
                   onChange={(e) => setDraftModel(e.target.value)}
-                  className="w-full text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full text-base md:text-sm bg-black/20 border-[0.5px] border-white/10 rounded-xl px-3 py-2.5 text-white/95 outline-none focus:border-[#0A84FF] focus:bg-black/30 transition-colors [&>option]:bg-[#1e1e20] [&>option]:text-white/95"
                 >
                   {models.map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* System prompt */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-[13px] md:text-sm font-medium text-white/80 mb-2">
                   System Prompt
                 </label>
                 <textarea
@@ -147,27 +152,26 @@ export default function SettingsModal({
                   onChange={(e) => setDraftSystemPrompt(e.target.value)}
                   placeholder="You are a helpful assistant..."
                   rows={4}
-                  className="w-full text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:border-indigo-500 transition-colors resize-none"
+                  className="w-full text-base md:text-sm bg-black/20 border-[0.5px] border-white/10 rounded-xl px-3 py-2.5 text-white/95 placeholder:text-white/30 outline-none focus:border-[#0A84FF] focus:bg-black/30 transition-colors resize-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full"
                 />
-                <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-600">
-                  Applied to all new conversations.
-                </p>
+                <p className="mt-1.5 text-xs text-white/40">Applied to all new conversations.</p>
               </div>
             </div>
           </section>
 
           {/* Conversations */}
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-600 mb-4">
+            <h3 className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">
               Conversations
             </h3>
             <div className="space-y-3">
-
               {/* Cloud */}
-              <div className="flex items-center justify-between py-3 px-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-white/5 border-[0.5px] border-white/10">
                 <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">☁️ Cloud (D1)</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-600 mt-0.5">Stored in Cloudflare D1</p>
+                  <p className="text-[13px] md:text-sm font-medium text-white/95">☁️ Cloud (D1)</p>
+                  <p className="text-[11px] md:text-xs text-white/40 mt-0.5">
+                    Stored in Cloudflare D1
+                  </p>
                 </div>
                 <button
                   onClick={() => {
@@ -175,17 +179,21 @@ export default function SettingsModal({
                       onClearConversations("cloud");
                     }
                   }}
-                  className="text-xs font-medium text-red-500 hover:text-red-600 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg px-3 py-1.5 transition-colors"
+                  className="text-[11px] md:text-xs font-medium text-red-400 hover:text-red-300 border-[0.5px] border-red-500/30 hover:bg-red-500/20 rounded-lg px-3 py-1.5 transition-all focus:outline-none"
                 >
                   Clear
                 </button>
               </div>
 
               {/* Local */}
-              <div className="flex items-center justify-between py-3 px-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-white/5 border-[0.5px] border-white/10">
                 <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">💾 Local (Browser)</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-600 mt-0.5">Stored in browser localStorage</p>
+                  <p className="text-[13px] md:text-sm font-medium text-white/95">
+                    💾 Local (Browser)
+                  </p>
+                  <p className="text-[11px] md:text-xs text-white/40 mt-0.5">
+                    Stored in browser localStorage
+                  </p>
                 </div>
                 <button
                   onClick={() => {
@@ -193,27 +201,26 @@ export default function SettingsModal({
                       onClearConversations("local");
                     }
                   }}
-                  className="text-xs font-medium text-red-500 hover:text-red-600 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg px-3 py-1.5 transition-colors"
+                  className="text-[11px] md:text-xs font-medium text-red-400 hover:text-red-300 border-[0.5px] border-red-500/30 hover:bg-red-500/20 rounded-lg px-3 py-1.5 transition-all focus:outline-none"
                 >
                   Clear
                 </button>
               </div>
-
             </div>
           </section>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex gap-3 shrink-0">
+        <div className="px-6 py-4 border-t-[0.5px] border-white/10 flex gap-3 shrink-0 bg-white/[0.02]">
           <button
             onClick={handleCancel}
-            className="flex-1 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="flex-1 py-2.5 text-[13px] md:text-sm font-medium text-white/80 bg-white/5 border-[0.5px] border-white/10 hover:bg-white/10 hover:text-white/95 rounded-xl transition-all focus:outline-none"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+            className="flex-1 py-2.5 text-[13px] md:text-sm font-medium text-white bg-[#0A84FF] hover:bg-[#0070E0] rounded-xl shadow-[0_2px_8px_rgba(10,132,255,0.3)] transition-all focus:outline-none"
           >
             Save
           </button>
