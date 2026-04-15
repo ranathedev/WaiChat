@@ -14,6 +14,15 @@ const DEFAULT_MODEL_KEY = "waichat:default-model";
 const MOBILE_BREAKPOINT = 768;
 
 export default function App() {
+  // Track the actual saved preference in localStorage separately
+  const [savedStorageMode, setSavedStorageMode] = useState<StorageMode>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(STORAGE_MODE_KEY);
+      return stored === "local" ? "local" : "cloud";
+    }
+    return "cloud";
+  });
+
   // Check the URL for a forced storage mode first, fallback to localStorage
   const [storageMode, setStorageMode] = useState<StorageMode>(() => {
     if (typeof window !== "undefined") {
@@ -21,8 +30,7 @@ export default function App() {
       if (path.startsWith("/c/local/")) return "local";
       if (path.startsWith("/c/cloud/")) return "cloud";
     }
-    const stored = localStorage.getItem(STORAGE_MODE_KEY);
-    return stored === "local" ? "local" : "cloud";
+    return savedStorageMode;
   });
 
   const {
@@ -155,15 +163,29 @@ export default function App() {
     }
   };
 
-  // Wrapper for selecting a chat: automatically close sidebar on mobile
   const handleSelectConversation = (id: string) => {
     selectConversation(id);
     closeSidebarOnMobile();
   };
 
-  // Wrapper for new chat: automatically close sidebar on mobile
-  const handleNew = async () => {
-    await newConversation(model);
+  const handleStorageToggle = (next: StorageMode) => {
+    setStorageMode(next);
+    setSavedStorageMode(next); // Sync saved mode when manually toggled
+    localStorage.setItem(STORAGE_MODE_KEY, next);
+    setStorageDropdownOpen(false);
+  };
+
+  // Wrapper for new chat with mode support
+  const handleNew = async (targetMode: StorageMode = storageMode) => {
+    if (targetMode !== storageMode) {
+      // User opted to return to their default mode. We toggle state and reset home.
+      handleStorageToggle(targetMode);
+      clearConversation();
+      window.history.pushState({}, "", "/");
+    } else {
+      // Standard new chat in the current mode
+      await newConversation(model);
+    }
     closeSidebarOnMobile();
   };
 
@@ -175,12 +197,6 @@ export default function App() {
     } else {
       await sendMessage(content, model, activeConversation.id, storageMode, systemPrompt);
     }
-  };
-
-  const handleStorageToggle = (next: StorageMode) => {
-    setStorageMode(next);
-    localStorage.setItem(STORAGE_MODE_KEY, next);
-    setStorageDropdownOpen(false); // Close dropdown after selection
   };
 
   const handleDefaultModelChange = (m: string) => {
@@ -197,7 +213,6 @@ export default function App() {
     if (mode === "cloud") {
       await fetch("/api/conversations", { method: "DELETE" });
     } else {
-      // Clear localStorage conversations and messages
       const keys = Object.keys(localStorage).filter(
         (k) => k.startsWith("waichat:conversations") || k.startsWith("waichat:messages:"),
       );
@@ -225,6 +240,8 @@ export default function App() {
         onNew={handleNew}
         onDelete={deleteConversation}
         onSettingsOpen={() => setSettingsOpen(true)}
+        currentMode={storageMode}
+        savedMode={savedStorageMode}
       />
 
       <main className="flex flex-col flex-1 min-w-0">
