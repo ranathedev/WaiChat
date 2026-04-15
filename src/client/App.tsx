@@ -14,7 +14,13 @@ const DEFAULT_MODEL_KEY = "waichat:default-model";
 const MOBILE_BREAKPOINT = 768;
 
 export default function App() {
+  // Check the URL for a forced storage mode first, fallback to localStorage
   const [storageMode, setStorageMode] = useState<StorageMode>(() => {
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      if (path.startsWith("/c/local/")) return "local";
+      if (path.startsWith("/c/cloud/")) return "cloud";
+    }
     const stored = localStorage.getItem(STORAGE_MODE_KEY);
     return stored === "local" ? "local" : "cloud";
   });
@@ -56,29 +62,48 @@ export default function App() {
 
   const initialLoadDone = useRef(false);
 
-  // Check the URL on the very first render safely
+  // Safely parse the new URL format on initial render
   useEffect(() => {
     if (initialLoadDone.current) return;
 
     const path = window.location.pathname;
     if (path.startsWith("/c/")) {
-      const id = path.slice(3);
-      if (id) selectConversation(id);
+      const parts = path.split("/");
+      const mode = parts[2];
+      const id = parts[3];
+
+      if ((mode === "cloud" || mode === "local") && id) {
+        selectConversation(id);
+      } else {
+        // Invalid path format, just go back home cleanly
+        window.history.replaceState({}, "", "/");
+      }
     }
 
     initialLoadDone.current = true;
   }, [selectConversation]);
 
-  // Browser Back/Forward: Listen to history pops
+  // Handle browser Back/Forward with cross-mode support
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
       if (path.startsWith("/c/")) {
-        const id = path.slice(3);
-        if (id) {
+        const parts = path.split("/");
+        const mode = parts[2] as StorageMode;
+        const id = parts[3];
+
+        if ((mode === "cloud" || mode === "local") && id) {
+          if (mode !== storageMode) {
+            // If the user hits "Back" and it crosses into a different storage mode,
+            // the safest way to re-initialize all hooks and state is a hard reload.
+            window.location.reload();
+            return;
+          }
           selectConversation(id);
         } else {
+          // Invalid URL format, act as if we hit home
           clearConversation();
+          window.history.replaceState({}, "", "/");
         }
       } else {
         clearConversation();
@@ -86,20 +111,20 @@ export default function App() {
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectConversation, clearConversation]);
+  }, [selectConversation, clearConversation, storageMode]);
 
-  // Update the URL when the active chat changes
+  // Update the URL format to include the storage mode
   useEffect(() => {
     const currentPath = window.location.pathname;
     if (activeConversation) {
-      const expectedPath = `/c/${activeConversation.id}`;
+      const expectedPath = `/c/${storageMode}/${activeConversation.id}`;
       if (currentPath !== expectedPath) {
         window.history.pushState({}, "", expectedPath);
       }
     } else if (currentPath !== "/") {
       window.history.pushState({}, "", "/");
     }
-  }, [activeConversation]);
+  }, [activeConversation, storageMode]);
 
   // Close storage dropdown when clicking outside or pressing Escape
   useEffect(() => {
