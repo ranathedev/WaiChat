@@ -139,7 +139,7 @@ export default function SettingsModal({
                           : "text-gray-500 hover:text-gray-900 hover:bg-black/5 dark:text-white/65 dark:hover:text-white/95 dark:hover:bg-white/5"
                       }`}
                     >
-                      {mode === "cloud" ? "☁️ Cloud (D1)" : "💾 Local (Browser)"}
+                      {mode === "cloud" ? "Cloud (D1)" : "Local (Browser)"}
                     </button>
                   ))}
                 </div>
@@ -197,7 +197,7 @@ export default function SettingsModal({
               <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10">
                 <div>
                   <p className="text-[13px] md:text-sm font-medium text-gray-900 dark:text-white/95">
-                    ☁️ Cloud (D1)
+                    Cloud (D1)
                   </p>
                   <p className="text-[11px] md:text-xs text-gray-500 dark:text-white/40 mt-0.5">
                     Stored in Cloudflare D1
@@ -219,7 +219,7 @@ export default function SettingsModal({
               <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-white/60 dark:bg-white/5 border-[0.5px] border-black/10 dark:border-white/10">
                 <div>
                   <p className="text-[13px] md:text-sm font-medium text-gray-900 dark:text-white/95">
-                    💾 Local (Browser)
+                    Local (Browser)
                   </p>
                   <p className="text-[11px] md:text-xs text-gray-500 dark:text-white/40 mt-0.5">
                     Stored in browser localStorage

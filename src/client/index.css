@@ -2,3 +2,19 @@
 
 /* Override default OS dark mode to look for the .dark class on the <html> tag instead */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Universal Interactive Cursors */
+@layer base {
+  button,
+  [role="button"],
+  [onclick],
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  /* Ensure disabled states don't show the pointer */
+  button:disabled,
+  [disabled] {
+    cursor: not-allowed;
+  }
+}
