@@ -27,7 +27,7 @@ function ThoughtParser({ content }: { content: string }) {
   const isThinking = hasThought && thinkEndIndex === -1;
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isThinking) {
       interval = setInterval(() => {
         setElapsed((prev) => prev + 1);
