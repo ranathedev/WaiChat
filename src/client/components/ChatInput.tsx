@@ -87,7 +87,7 @@ export default function ChatInput({
             </svg>
           </button>
 
-          <div className="flex justify-between items-center mt-3 border-t-[0.5px] border-black/5 dark:border-white/5 pt-2">
+          {/*<div className="flex justify-between items-center mt-3 border-t-[0.5px] border-black/5 dark:border-white/5 pt-2">
             <button
               type="button"
               className="flex items-center gap-2 bg-transparent border-none text-gray-500 hover:text-gray-900 dark:text-white/50 dark:hover:text-white/95 text-[13px] md:text-sm font-medium cursor-pointer transition-colors focus:outline-none"
@@ -101,9 +101,9 @@ export default function ChatInput({
               >
                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
               </svg>
-              Attach
+              Files
             </button>
-          </div>
+          </div>*/}
         </form>
 
         <div className="text-center text-xs text-gray-400 dark:text-white/40 mt-3 hidden md:block tracking-wide">
