@@ -18,3 +18,8 @@
     cursor: not-allowed;
   }
 }
+
+/* If the [onclick] selector doesn't catch React divs */
+.interactive-card {
+  @apply cursor-pointer transition-all active:scale-[0.98];
+}

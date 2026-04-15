@@ -19,7 +19,8 @@ export type ThemeMode = "system" | "light" | "dark";
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem(THEME_KEY) as ThemeMode) || "system";
+      const stored = localStorage.getItem(THEME_KEY);
+      return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
     }
     return "system";
   });
@@ -332,7 +333,7 @@ export default function App() {
 
               <div className="flex items-center gap-2 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border-[0.5px] border-black/5 dark:border-white/10 rounded-full pl-3 pr-2 py-1.5 transition-all">
                 <div className="w-2 h-2 rounded-full bg-[#0A84FF]"></div>
-                <div className="flex-1 min-w-0 text-xs md:text-sm font-medium text-gray-700 dark:text-white/65 [&_select]:text-gray-700 dark:[&_select]:text-white/65 [&_select]:bg-transparent [&_select]:border-none [&_select]:py-0 [&_select]:pl-0 [&_select]:pr-4 [&_select]:outline-none [&_select]:cursor-pointer [&_select]:appearance-none">
+                <div className="flex-1 min-w-0">
                   <ModelPicker
                     models={models}
                     value={model}

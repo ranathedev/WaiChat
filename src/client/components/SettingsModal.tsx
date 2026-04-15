@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Model } from "../hooks/useModels";
 import type { StorageMode } from "../storage";
+import ModelPicker from "./ModelPicker";
 
 interface SettingsModalProps {
   open: boolean;
@@ -155,19 +156,16 @@ export default function SettingsModal({
                 <label className="block text-[13px] md:text-sm font-medium text-gray-700 dark:text-white/80 mb-2">
                   Default Model
                 </label>
-                <select
-                  value={draftModel}
-                  onChange={(e) => setDraftModel(e.target.value)}
-                  className="w-full text-base md:text-sm bg-black/5 dark:bg-black/20 border-[0.5px] border-black/10 dark:border-white/10 rounded-full px-3 py-2.5 text-gray-900 dark:text-white/95 outline-none focus:border-[#0A84FF] focus:bg-white dark:focus:bg-black/30 transition-colors [&>option]:bg-white dark:[&>option]:bg-[#1e1e20] [&>option]:text-gray-900 dark:[&>option]:text-white/95"
-                >
-                  {models.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
+                {/* Wrapper provides the input-box styling, ModelPicker stays transparent inside! */}
+                <div className="w-full bg-black/5 dark:bg-black/20 border-[0.5px] border-black/10 dark:border-white/10 rounded-xl px-3 py-2.5 focus-within:border-[#0A84FF] focus-within:bg-white dark:focus-within:bg-black/30 transition-colors">
+                  <ModelPicker
+                    models={models}
+                    value={draftModel}
+                    onChange={setDraftModel}
+                    className="w-full"
+                  />
+                </div>
               </div>
-
               {/* System prompt */}
               <div>
                 <label className="block text-[13px] md:text-sm font-medium text-gray-700 dark:text-white/80 mb-2">
