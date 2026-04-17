@@ -1,0 +1,44 @@
+# ==============================================================================
+# Workflow: Dev - Test Upstream Branch
+# Description: A developer tool to test specific upstream branches or pull
+#              requests on a live Cloudflare instance without needing to spawn
+#              a new repository. It fetches the specified branch from upstream
+#              and merges it into the local main branch for deployment.
+# ==============================================================================
+
+name: "Dev: Test Upstream Branch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: "Which upstream branch do you want to test? (e.g., main, feat/ui-overhaul)"
+        required: true
+        default: "main"
+        type: string
+
+jobs:
+  test-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add upstream repository
+        run: git remote add upstream https://github.com/ranajahanzaib/WaiChat.git
+
+      - name: Fetch upstream branch
+        run: git fetch upstream ${{ github.event.inputs.target_branch }}
+
+      - name: Merge Upstream Branch
+        run: |
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "action@github.com"
+
+          # Merge the specific upstream branch into the local main branch
+          git merge FETCH_HEAD --allow-unrelated-histories -m "chore: dev testing upstream branch ${{ github.event.inputs.target_branch }}" || echo "No new updates or merge conflict"
+
+      - name: Push changes to trigger deployment
+        run: git push origin main
