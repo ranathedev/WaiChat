@@ -1,10 +1,11 @@
 # ==============================================================================
 # Workflow: Update WaiChat
-# Description: Provides a 1-click "Over-The-Air" update mechanism for users
-#              who deployed WaiChat via the Cloudflare "Deploy" button.
-#              It fetches the latest official releases from the upstream repo
-#              (either stable or pre-release) and safely merges them into the
-#              user's local repository, triggering a Cloudflare redeployment.
+# Description: Deploys the latest WaiChat release to your live Cloudflare
+#              instance with a single click. Choose between stable releases or
+#              pre-releases (alpha/beta). Automatically skips if you're already
+#              on the target version, and aborts safely on any merge conflict
+#              rather than pushing a broken state.
+#              NOTE: This workflow is a no-op in the upstream WaiChat repo.
 # ==============================================================================
 name: Update WaiChat
 
@@ -26,6 +27,7 @@ permissions:
 jobs:
   update-app:
     runs-on: ubuntu-latest
+    if: github.repository != 'ranajahanzaib/WaiChat'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

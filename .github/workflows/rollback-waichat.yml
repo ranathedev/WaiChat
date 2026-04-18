@@ -1,9 +1,11 @@
 # ==============================================================================
 # Workflow: Rollback WaiChat
-# Description: Provides a safe "panic button" to revert the application to a
-#              previous release. Instead of force-pushing or rewriting history,
-#              this uses `git restore` to copy the state of an older tag and
-#              creates a new forward-moving commit to trigger Cloudflare's CI.
+# Description: Reverts your live Cloudflare instance to a previously released
+#              version by entering its exact tag (e.g. v0.1.1-alpha). Uses a
+#              forward commit instead of force-pushing to keep history intact
+#              and trigger a clean Cloudflare redeployment. Skips the push if
+#              you're already on the specified version.
+#              NOTE: This workflow is a no-op in the upstream WaiChat repo.
 # ==============================================================================
 name: "Rollback WaiChat"
 
@@ -21,6 +23,7 @@ permissions:
 jobs:
   rollback-app:
     runs-on: ubuntu-latest
+    if: github.repository != 'ranajahanzaib/WaiChat'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
