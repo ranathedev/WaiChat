@@ -20,6 +20,9 @@ on:
           - latest-stable
           - latest-prerelease (alpha/beta)
 
+permissions:
+  contents: write
+
 jobs:
   update-app:
     runs-on: ubuntu-latest
@@ -39,11 +42,11 @@ jobs:
         id: get_tag
         run: |
           if [ "${{ github.event.inputs.update_track }}" == "latest-stable" ]; then
-            # Fetches the absolute latest stable release using the built-in automatic token
-            TAG=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/ranajahanzaib/WaiChat/releases/latest | jq -r .tag_name)
+            TAG=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/ranajahanzaib/WaiChat/releases/latest | jq -r .tag_name)
           else
-            # Fetches the most recent release of any kind (including alphas/betas)
-            TAG=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/ranajahanzaib/WaiChat/releases | jq -r '.[0].tag_name')
+            TAG=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/ranajahanzaib/WaiChat/releases | jq -r '.[0].tag_name')
           fi
 
           if [ "$TAG" == "null" ] || [ -z "$TAG" ]; then
@@ -54,13 +57,38 @@ jobs:
           echo "TARGET_TAG=$TAG" >> $GITHUB_ENV
           echo "Updating to tag: $TAG"
 
+      - name: Check if already up to date
+        id: version_check
+        run: |
+          CURRENT=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "unknown")
+          echo "Current version: $CURRENT"
+          echo "Target version:  ${{ env.TARGET_TAG }}"
+          if [ "$CURRENT" == "${{ env.TARGET_TAG }}" ]; then
+            echo "ALREADY_UP_TO_DATE=true" >> $GITHUB_ENV
+          else
+            echo "ALREADY_UP_TO_DATE=false" >> $GITHUB_ENV
+          fi
+
       - name: Merge Release Tag
+        if: env.ALREADY_UP_TO_DATE == 'false'
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "action@github.com"
-
-          # Merge the specific release tag into the user's main branch
-          git merge ${{ env.TARGET_TAG }} --allow-unrelated-histories -m "chore: update WaiChat to ${{ env.TARGET_TAG }}" || echo "No new updates or merge conflict"
+          if ! git merge ${{ env.TARGET_TAG }} --allow-unrelated-histories \
+               -m "chore: update WaiChat to ${{ env.TARGET_TAG }}"; then
+            echo "Error: Merge conflict detected. Aborting update."
+            git merge --abort
+            exit 1
+          fi
 
       - name: Push updates
-        run: git push origin main
+        if: env.ALREADY_UP_TO_DATE == 'false'
+        run: git push origin HEAD
+
+      - name: Report status
+        run: |
+          if [ "${{ env.ALREADY_UP_TO_DATE }}" == "true" ]; then
+            echo "Already on ${{ env.TARGET_TAG }}. No update needed."
+          else
+            echo "Successfully updated to ${{ env.TARGET_TAG }}."
+          fi
