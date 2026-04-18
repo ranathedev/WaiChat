@@ -1,9 +1,11 @@
 # ==============================================================================
-# Workflow: Dev - Test Upstream Branch
-# Description: A developer tool to test specific upstream branches or pull
-#              requests on a live Cloudflare instance without needing to spawn
-#              a new repository. It fetches the specified branch from upstream
-#              and merges it into the local main branch for deployment.
+# Workflow: Deploy Upstream Branch
+# Description: Deploys a specific upstream branch directly to your live
+#              Cloudflare instance. Useful for previewing in-progress features
+#              or PRs without spawning a new repository. Fetches the target
+#              branch from upstream and merges it into your main branch,
+#              triggering a full Cloudflare redeployment.
+#              NOTE: This workflow is a no-op in the upstream WaiChat repo.
 # ==============================================================================
 name: "Dev: Test Upstream Branch"
 
@@ -22,6 +24,7 @@ permissions:
 jobs:
   test-branch:
     runs-on: ubuntu-latest
+    if: github.repository != 'ranajahanzaib/WaiChat'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
