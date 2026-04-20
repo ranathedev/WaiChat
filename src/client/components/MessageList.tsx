@@ -167,20 +167,31 @@ export default function MessageList({ messages, isStreaming, onSelectPrompt }: M
   const isUserScrolled = useRef(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Keep track of how many message blocks exist
+  const prevMessageCount = useRef(messages.length);
+
   // Detects when the user scrolls away from the bottom
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
 
-    // Calculate distance from the bottom
     const distanceToBottom = scrollHeight - scrollTop - clientHeight;
 
-    // If the user is more than 100px away from the bottom, they scrolled up. Lock auto-scroll.
-    isUserScrolled.current = distanceToBottom > 100;
+    // If the user is more than 20px away from the bottom, they scrolled up. Lock auto-scroll.
+    isUserScrolled.current = distanceToBottom > 20;
   };
 
   useEffect(() => {
-    // Only auto-scroll if the user hasn't manually scrolled up
+    // If a brand new message block was added, a new turn just started.
+    // This safely catches both new user prompts and model retries.
+    if (messages.length > prevMessageCount.current) {
+      isUserScrolled.current = false; // Break the lock!
+    }
+
+    // Update the ref for the next render
+    prevMessageCount.current = messages.length;
+
+    // Scroll down if we aren't locked
     if (!isUserScrolled.current) {
       bottomRef.current?.scrollIntoView({ behavior: "auto" });
     }
