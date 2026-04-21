@@ -98,8 +98,3 @@ export async function softDeleteMessage(db: D1Database, id: string): Promise<voi
     .bind(Date.now(), id)
     .run();
 }
-
-export async function deleteMessagesByParentId(db: D1Database, parentId: string): Promise<void> {
-  await db.prepare("DELETE FROM messages WHERE parent_id = ?").bind(parentId).run();
-}
-
