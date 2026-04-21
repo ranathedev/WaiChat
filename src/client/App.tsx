@@ -130,7 +130,7 @@ export default function App() {
           return res.json() as Promise<{ value?: string }>;
         })
         .then((data) => {
-          if (data.value && data.value !== systemPrompt) {
+          if (data.value != null && data.value !== systemPrompt) {
             setSystemPrompt(data.value);
             localStorage.setItem(SYSTEM_PROMPT_KEY, data.value);
           }
