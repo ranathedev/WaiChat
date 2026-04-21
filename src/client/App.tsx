@@ -375,10 +375,10 @@ export default function App() {
 
               <div className={`flex items-center gap-2 border-[0.5px] border-black/5 dark:border-white/10 rounded-full pl-3 pr-2 py-1.5 transition-all ${
                 storageMode === "cloud"
-                  ? "bg-blue-500/10 hover:bg-blue-500/20 dark:bg-blue-500/15 dark:hover:bg-blue-500/25"
-                  : "bg-amber-500/10 hover:bg-amber-500/20 dark:bg-amber-500/15 dark:hover:bg-amber-500/25"
+                  ? "bg-brand-cloud/10 hover:bg-brand-cloud/20 dark:bg-brand-cloud/15 dark:hover:bg-brand-cloud/25"
+                  : "bg-brand-local/10 hover:bg-brand-local/20 dark:bg-brand-local/15 dark:hover:bg-brand-local/25"
               }`}>
-                <div className={`w-2 h-2 rounded-full ${storageMode === "cloud" ? "bg-[#0A84FF]" : "bg-[#FF9F0A]"}`}></div>
+                <div className={`w-2 h-2 rounded-full ${storageMode === "cloud" ? "bg-brand-cloud" : "bg-brand-local"}`}></div>
                 <div className="flex-1 min-w-0">
                   <ModelPicker
                     models={models}
@@ -398,9 +398,9 @@ export default function App() {
                   aria-expanded={storageDropdownOpen}
                 >
                   {storageMode === "cloud" ? (
-                    <div className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_4px_rgba(52,199,89,0.3)] dark:shadow-[0_0_4px_rgba(52,199,89,0.5)]"></div>
+                    <div className="w-2 h-2 rounded-full bg-brand-cloud shadow-sm shadow-brand-cloud/30 dark:shadow-brand-cloud/50"></div>
                   ) : (
-                    <div className="w-2 h-2 rounded-full bg-[#FF9F0A] shadow-[0_0_4px_rgba(255,159,10,0.3)] dark:shadow-[0_0_4px_rgba(255,159,10,0.5)]"></div>
+                    <div className="w-2 h-2 rounded-full bg-brand-local shadow-sm shadow-brand-local/30 dark:shadow-brand-local/50"></div>
                   )}
                   {storageMode === "cloud" ? "Cloud" : "Local"}
                   <svg className="w-3 h-3 ml-1" viewBox="0 0 12 12" fill="currentColor">
@@ -423,14 +423,18 @@ export default function App() {
                       onClick={() => handleStorageToggle(mode)}
                       className={`w-full flex flex-col items-start px-3 py-2.5 text-left rounded-xl transition-all duration-200 cursor-pointer ${
                         storageMode === mode
-                          ? "bg-[#0A84FF]/10 dark:bg-[#0A84FF]/20"
+                          ? mode === "cloud"
+                            ? "bg-brand-cloud/10 dark:bg-brand-cloud/20"
+                            : "bg-brand-local/10 dark:bg-brand-local/20"
                           : "hover:bg-black/5 dark:hover:bg-white/10"
                       }`}
                     >
                       <p
                         className={`text-[13px] md:text-sm font-medium ${
                           storageMode === mode
-                            ? "text-[#0A84FF] dark:text-[#3A9FFF]"
+                            ? mode === "cloud"
+                              ? "text-brand-cloud"
+                              : "text-brand-local"
                             : "text-gray-900 dark:text-white/95"
                         }`}
                       >
@@ -439,7 +443,9 @@ export default function App() {
                       <p
                         className={`text-[11px] md:text-xs mt-0.5 ${
                           storageMode === mode
-                            ? "text-[#0A84FF]/70 dark:text-[#3A9FFF]/70"
+                            ? mode === "cloud"
+                              ? "text-brand-cloud/70"
+                              : "text-brand-local/70"
                             : "text-gray-500 dark:text-white/40"
                         }`}
                       >
