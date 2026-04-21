@@ -75,3 +75,31 @@ export async function saveMessage(db: D1Database, message: Message): Promise<voi
     )
     .run();
 }
+
+export async function getMessageById(db: D1Database, id: string): Promise<Message | null> {
+  return db.prepare("SELECT * FROM messages WHERE id = ?").bind(id).first<Message>();
+}
+
+export async function getSiblingCount(db: D1Database, parentId: string): Promise<number> {
+  const row = await db
+    .prepare("SELECT COUNT(*) as count FROM messages WHERE parent_id = ?")
+    .bind(parentId)
+    .first<{ count: number }>();
+  return row?.count ?? 0;
+}
+
+export async function deleteMessageById(db: D1Database, id: string): Promise<void> {
+  await db.prepare("DELETE FROM messages WHERE id = ?").bind(id).run();
+}
+
+export async function softDeleteMessage(db: D1Database, id: string): Promise<void> {
+  await db
+    .prepare("UPDATE messages SET content = '', deleted_at = ? WHERE id = ?")
+    .bind(Date.now(), id)
+    .run();
+}
+
+export async function deleteMessagesByParentId(db: D1Database, parentId: string): Promise<void> {
+  await db.prepare("DELETE FROM messages WHERE parent_id = ?").bind(parentId).run();
+}
+

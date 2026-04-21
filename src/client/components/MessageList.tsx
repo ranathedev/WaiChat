@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Message } from "../storage";
+import ConfirmModal from "./ConfirmModal";
 
 interface MessageListProps {
   messages: Message[];
   isStreaming: boolean;
   onSelectPrompt: (prompt: string) => void;
   onRetry?: (messageId: string) => void;
+  onDelete?: (messageId: string) => void;
   activeVersions: Record<string, string>;
   onVersionChange?: (parentId: string, messageId: string) => void;
 }
@@ -184,6 +186,7 @@ export default function MessageList({
   isStreaming,
   onSelectPrompt,
   onRetry,
+  onDelete,
   activeVersions,
   onVersionChange,
 }: MessageListProps) {
@@ -191,6 +194,7 @@ export default function MessageList({
   const scrollRef = useRef<HTMLDivElement>(null);
   const isUserScrolled = useRef(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; role: "user" | "assistant"; isLastVersion: boolean } | null>(null);
 
   // Keep track of how many message blocks exist
   const prevMessageCount = useRef(messages.length);
@@ -238,31 +242,37 @@ export default function MessageList({
       const retrySiblings = siblingMap.get(parentId) || [];
       const allSiblings = [m, ...retrySiblings];
 
-      // Determine active version
+      // Filter out soft-deleted siblings for display purposes
+      const visibleSiblings = allSiblings.filter((s) => !s.deleted_at);
+
+      // If ALL versions are deleted, skip rendering this group entirely
+      if (visibleSiblings.length === 0) continue;
+
+      // Determine active version (only among visible siblings)
       const explicitActive = activeVersions[parentId];
       let activeMessage: Message;
       let activeIndex: number;
 
       if (explicitActive) {
-        const idx = allSiblings.findIndex((s) => s.id === explicitActive);
+        const idx = visibleSiblings.findIndex((s) => s.id === explicitActive);
         if (idx >= 0) {
-          activeMessage = allSiblings[idx];
+          activeMessage = visibleSiblings[idx];
           activeIndex = idx;
         } else {
-          // Fallback to latest
-          activeMessage = allSiblings[allSiblings.length - 1];
-          activeIndex = allSiblings.length - 1;
+          // Fallback to latest visible
+          activeMessage = visibleSiblings[visibleSiblings.length - 1];
+          activeIndex = visibleSiblings.length - 1;
         }
       } else {
-        // Default to latest
-        activeMessage = allSiblings[allSiblings.length - 1];
-        activeIndex = allSiblings.length - 1;
+        // Default to latest visible
+        activeMessage = visibleSiblings[visibleSiblings.length - 1];
+        activeIndex = visibleSiblings.length - 1;
       }
 
       items.push({
         type: "assistant",
         parentId,
-        siblings: allSiblings,
+        siblings: visibleSiblings,
         activeMessage,
         activeIndex,
       });
@@ -438,36 +448,55 @@ export default function MessageList({
               <div className="max-w-[85%] md:max-w-[75%] rounded-[20px] px-5 py-4 text-[15px] md:text-base leading-relaxed bg-[#0A84FF] text-white rounded-br-sm">
                 <p className="whitespace-pre-wrap">{m.content}</p>
               </div>
-              {m.content && (
-                <button
-                  onClick={() => handleCopy(m.id, m.content)}
-                  className="mt-2 px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white/80 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1.5 cursor-pointer"
-                  aria-label="Copy message"
-                >
-                  {copiedId === m.id ? (
-                    <>
-                      <span className="text-[#34C759]">✓</span> Copied
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
-                      Copy
-                    </>
-                  )}
-                </button>
-              )}
+              <div className="mt-2 flex items-center gap-1">
+                {m.content && (
+                  <button
+                    onClick={() => handleCopy(m.id, m.content)}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 dark:text-white/40 dark:hover:text-white/80 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                    aria-label="Copy message"
+                  >
+                    {copiedId === m.id ? (
+                      <>
+                        <span className="text-[#34C759]">✓</span> Copied
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        Copy
+                      </>
+                    )}
+                  </button>
+                )}
+                {!isStreaming && onDelete && (
+                  <button
+                    onClick={() => setDeleteTarget({ id: m.id, role: "user", isLastVersion: false })}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-red-500 dark:text-white/40 dark:hover:text-red-400 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                    aria-label="Delete message"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
           );
         }
@@ -598,11 +627,51 @@ export default function MessageList({
                   Retry
                 </button>
               )}
+
+              {/* Delete button */}
+              {m.content && !isStreaming && onDelete && (
+                <button
+                  onClick={() => setDeleteTarget({ id: m.id, role: "assistant", isLastVersion: totalVersions === 1 && !!m.parent_id })}
+                  className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-red-500 dark:text-white/40 dark:hover:text-red-400 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                  aria-label="Delete response"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Delete
+                </button>
+              )}
             </div>
           </div>
         );
       })}
       <div ref={bottomRef} />
+
+      {/* Delete confirmation modal */}
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete message"
+        description={
+          deleteTarget?.role === "user"
+            ? "Delete this message? The response below it will also be removed."
+            : deleteTarget?.isLastVersion
+              ? "Delete this response? This is the only version left."
+              : "Delete this response?"
+        }
+        confirmLabel="Delete"
+        onConfirm={() => {
+          if (deleteTarget && onDelete) {
+            onDelete(deleteTarget.id);
+          }
+          setDeleteTarget(null);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

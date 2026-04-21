@@ -1,4 +1,4 @@
-import type { StorageAdapter, Conversation, Message } from "./index";
+import type { StorageAdapter, Conversation, Message, DeleteMessageResult } from "./index";
 
 export class CloudStorage implements StorageAdapter {
   async getConversations(): Promise<Conversation[]> {
@@ -31,11 +31,11 @@ export class CloudStorage implements StorageAdapter {
     if (!res.ok) throw new Error("Failed to delete conversation");
   }
 
-  async saveMessage(msg: Omit<Message, "id" | "created_at">): Promise<Message> {
+  async saveMessage(msg: Omit<Message, "id" | "created_at"> & { id?: string }): Promise<Message> {
     // Messages are saved server-side during /api/chat — nothing to do here
     return {
       ...msg,
-      id: crypto.randomUUID(),
+      id: msg.id || crypto.randomUUID(),
       created_at: Date.now(),
     };
   }
@@ -43,4 +43,14 @@ export class CloudStorage implements StorageAdapter {
   async updateConversationTitle(id: string, title: string): Promise<void> {
     // Title is updated server-side after first message — nothing to do here
   }
+
+  async deleteMessage(conversationId: string, messageId: string): Promise<DeleteMessageResult> {
+    const res = await fetch(`/api/conversations/${conversationId}/messages/${messageId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to delete message");
+    const data = (await res.json()) as { deletedIds: string[]; softDeletedIds: string[] };
+    return { deletedIds: data.deletedIds, softDeletedIds: data.softDeletedIds };
+  }
 }
+

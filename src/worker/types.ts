@@ -21,6 +21,7 @@ export interface Message {
   created_at: number;
   model?: string;
   parent_id?: string;
+  deleted_at?: number;
 }
 
 export interface ChatRequest {
@@ -30,4 +31,6 @@ export interface ChatRequest {
   storage_mode: "cloud" | "local";
   system_prompt?: string;
   parent_id?: string;
+  user_message_id?: string;
+  assistant_message_id?: string;
 }

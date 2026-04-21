@@ -29,6 +29,7 @@ interface UseChatReturn {
     systemPrompt?: string,
   ) => Promise<void>;
   setActiveVersion: (parentId: string, messageId: string) => void;
+  deleteMessage: (messageId: string) => Promise<void>;
 }
 
 export function useChat(storageMode: StorageMode): UseChatReturn {
@@ -199,6 +200,7 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
       currentStorageMode: StorageMode,
       systemPrompt?: string,
       parentId?: string,
+      userMessageId?: string,
     ) => {
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
@@ -214,6 +216,8 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
           storage_mode: currentStorageMode,
           system_prompt: systemPrompt || undefined,
           parent_id: parentId || undefined,
+          user_message_id: userMessageId || undefined,
+          assistant_message_id: assistantMessageId || undefined,
         }),
       });
 
@@ -323,11 +327,14 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
           model,
           storageMode,
           systemPrompt,
+          undefined,
+          userMessage.id,
         );
 
         // Save whatever we got (full or partial)
-        await storage.saveMessage({ conversation_id: conversationId, role: "user", content });
+        await storage.saveMessage({ id: userMessage.id, conversation_id: conversationId, role: "user", content });
         await storage.saveMessage({
+          id: assistantMessage.id,
           conversation_id: conversationId,
           role: "assistant",
           content: fullContent,
@@ -437,11 +444,13 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
           storageMode,
           systemPrompt,
           parentId,
+          undefined,
         );
 
         // Save the new retry version (local mode only - cloud saves server-side)
         if (storageMode === "local") {
           await storage.saveMessage({
+            id: newAssistantMessage.id,
             conversation_id: conversationId,
             role: "assistant",
             content: fullContent,
@@ -464,6 +473,43 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
     [isStreaming, messages, storage, activeVersions, buildContextMessages, streamResponse],
   );
 
+  const deleteMessageCb = useCallback(
+    async (messageId: string) => {
+      if (!activeConversation) return;
+      try {
+        const result = await storage.deleteMessage(activeConversation.id, messageId);
+        const { deletedIds, softDeletedIds } = result;
+
+        setMessages((prev) => {
+          let updated = prev.filter((m) => !deletedIds.includes(m.id));
+          updated = updated.map((m) =>
+            softDeletedIds.includes(m.id) ? { ...m, content: "", deleted_at: Date.now() } : m,
+          );
+          return updated;
+        });
+
+        // Clean up activeVersions for deleted messages
+        setActiveVersions((prev) => {
+          const next = { ...prev };
+          for (const id of deletedIds) {
+            // If a deleted message was the active version, remove the entry
+            // so the UI defaults to the latest remaining sibling
+            for (const [parentId, activeId] of Object.entries(next)) {
+              if (activeId === id || parentId === id) {
+                delete next[parentId];
+              }
+            }
+          }
+          return next;
+        });
+      } catch (e) {
+        console.error("[deleteMessage] error:", e);
+        setError("Failed to delete message");
+      }
+    },
+    [activeConversation, storage],
+  );
+
   return {
     conversations,
     activeConversation,
@@ -480,5 +526,6 @@ export function useChat(storageMode: StorageMode): UseChatReturn {
     stopGeneration,
     retryMessage,
     setActiveVersion: setActiveVersionCb,
+    deleteMessage: deleteMessageCb,
   };
 }

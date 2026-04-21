@@ -1,4 +1,4 @@
-import type { StorageAdapter, Conversation, Message } from "./index";
+import type { Conversation, DeleteMessageResult, Message, StorageAdapter } from "./index";
 
 const CONVERSATIONS_KEY = "waichat:conversations";
 const MESSAGES_KEY = (id: string) => `waichat:messages:${id}`;
@@ -18,18 +18,18 @@ export class LocalStorage implements StorageAdapter {
 
   private getMessagesRaw(conversationId: string): Message[] {
     try {
-      return JSON.parse(
-        localStorage.getItem(MESSAGES_KEY(conversationId)) ?? "[]",
-      );
+      return JSON.parse(localStorage.getItem(MESSAGES_KEY(conversationId)) ?? "[]");
     } catch {
       return [];
     }
   }
 
+  private setMessages(conversationId: string, messages: Message[]): void {
+    localStorage.setItem(MESSAGES_KEY(conversationId), JSON.stringify(messages));
+  }
+
   async getConversations(): Promise<Conversation[]> {
-    return this.getConversationsRaw().sort(
-      (a, b) => b.updated_at - a.updated_at,
-    );
+    return this.getConversationsRaw().sort((a, b) => b.updated_at - a.updated_at);
   }
 
   async getConversation(
@@ -62,18 +62,15 @@ export class LocalStorage implements StorageAdapter {
     localStorage.removeItem(MESSAGES_KEY(id));
   }
 
-  async saveMessage(msg: Omit<Message, "id" | "created_at">): Promise<Message> {
+  async saveMessage(msg: Omit<Message, "id" | "created_at"> & { id?: string }): Promise<Message> {
     const message: Message = {
       ...msg,
-      id: crypto.randomUUID(),
+      id: msg.id || crypto.randomUUID(),
       created_at: Date.now(),
     };
     const messages = this.getMessagesRaw(msg.conversation_id);
     messages.push(message);
-    localStorage.setItem(
-      MESSAGES_KEY(msg.conversation_id),
-      JSON.stringify(messages),
-    );
+    this.setMessages(msg.conversation_id, messages);
 
     // Update conversation timestamp
     const conversations = this.getConversationsRaw().map((c) =>
@@ -88,5 +85,76 @@ export class LocalStorage implements StorageAdapter {
       c.id === id ? { ...c, title } : c,
     );
     this.setConversations(conversations);
+  }
+
+  async deleteMessage(conversationId: string, messageId: string): Promise<DeleteMessageResult> {
+    let messages = this.getMessagesRaw(conversationId);
+    const msg = messages.find((m) => m.id === messageId);
+    if (!msg) return { deletedIds: [], softDeletedIds: [] };
+
+    const deletedIds: string[] = [];
+    const softDeletedIds: string[] = [];
+
+    if (msg.role === "user") {
+      // Cascade: also delete the assistant turn below
+      const userIdx = messages.findIndex((m) => m.id === messageId);
+      for (let i = userIdx + 1; i < messages.length; i++) {
+        const m = messages[i];
+        if (m.role === "user") break;
+        if (m.role === "assistant" && !m.parent_id) {
+          // Delete all retry siblings
+          const siblings = messages.filter((s) => s.parent_id === m.id);
+          for (const s of siblings) deletedIds.push(s.id);
+          deletedIds.push(m.id);
+          break;
+        }
+      }
+      deletedIds.push(messageId);
+    } else {
+      // Assistant message
+      if (msg.parent_id) {
+        // Retry sibling - hard-delete
+        deletedIds.push(messageId);
+
+        // Check if parent is now orphaned
+        const remainingSiblings = messages.filter(
+          (m) => m.parent_id === msg.parent_id && m.id !== messageId,
+        );
+        if (remainingSiblings.length === 0) {
+          const parent = messages.find((m) => m.id === msg.parent_id);
+          if (parent && parent.deleted_at) {
+            deletedIds.push(parent.id);
+          }
+        }
+      } else {
+        // Parent assistant message
+        const siblingCount = messages.filter((m) => m.parent_id === msg.id).length;
+        if (siblingCount > 0) {
+          // Soft-delete
+          softDeletedIds.push(msg.id);
+        } else {
+          // Solo — hard-delete
+          deletedIds.push(msg.id);
+        }
+      }
+    }
+
+    // Apply deletions
+    messages = messages.filter((m) => !deletedIds.includes(m.id));
+
+    // Apply soft-deletes
+    messages = messages.map((m) =>
+      softDeletedIds.includes(m.id) ? { ...m, content: "", deleted_at: Date.now() } : m,
+    );
+
+    this.setMessages(conversationId, messages);
+
+    // Update conversation timestamp
+    const conversations = this.getConversationsRaw().map((c) =>
+      c.id === conversationId ? { ...c, updated_at: Date.now() } : c,
+    );
+    this.setConversations(conversations);
+
+    return { deletedIds, softDeletedIds };
   }
 }

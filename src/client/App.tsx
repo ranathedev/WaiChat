@@ -93,6 +93,7 @@ export default function App() {
     stopGeneration,
     retryMessage,
     setActiveVersion,
+    deleteMessage,
   } = useChat(storageMode);
 
   const { models } = useModels();
@@ -437,6 +438,7 @@ export default function App() {
             isStreaming={isStreaming}
             onSelectPrompt={setPendingPrompt}
             onRetry={(messageId) => retryMessage(messageId, model, storageMode, systemPrompt)}
+            onDelete={(messageId) => deleteMessage(messageId)}
             activeVersions={activeVersions}
             onVersionChange={setActiveVersion}
           />
