@@ -10,6 +10,7 @@ import SettingsModal from "./components/SettingsModal";
 
 const STORAGE_MODE_KEY = "waichat:storage-mode";
 const SYSTEM_PROMPT_KEY = "waichat:system-prompt";
+const SYNC_PROMPT_KEY = "waichat:sync-system-prompt";
 const DEFAULT_MODEL_KEY = "waichat:default-model";
 export const THEME_KEY = "waichat:theme";
 const MOBILE_BREAKPOINT = 768;
@@ -103,6 +104,9 @@ export default function App() {
   const [systemPrompt, setSystemPrompt] = useState(
     () => localStorage.getItem(SYSTEM_PROMPT_KEY) ?? "",
   );
+  const [syncSystemPrompt, setSyncSystemPrompt] = useState(
+    () => localStorage.getItem(SYNC_PROMPT_KEY) === "true",
+  );
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Storage dropdown state for mobile-friendly click toggling
@@ -116,6 +120,24 @@ export default function App() {
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
+
+  // Sync System Prompt from Cloud if enabled
+  useEffect(() => {
+    if (syncSystemPrompt) {
+      fetch("/api/settings/system_prompt")
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch system prompt");
+          return res.json() as Promise<{ value?: string }>;
+        })
+        .then((data) => {
+          if (data.value != null && data.value !== systemPrompt) {
+            setSystemPrompt(data.value);
+            localStorage.setItem(SYSTEM_PROMPT_KEY, data.value);
+          }
+        })
+        .catch((err) => console.error("Cloud sync error:", err));
+    }
+  }, [syncSystemPrompt]); // fetch on mount or when toggled ON
 
   const initialLoadDone = useRef(false);
 
@@ -258,9 +280,24 @@ export default function App() {
     localStorage.setItem(DEFAULT_MODEL_KEY, m);
   };
 
-  const handleSystemPromptChange = (prompt: string) => {
+  const handleSystemPromptChange = async (prompt: string, sync: boolean) => {
     setSystemPrompt(prompt);
     localStorage.setItem(SYSTEM_PROMPT_KEY, prompt);
+
+    setSyncSystemPrompt(sync);
+    localStorage.setItem(SYNC_PROMPT_KEY, String(sync));
+
+    if (sync) {
+      try {
+        await fetch("/api/settings/system_prompt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: prompt }),
+        });
+      } catch (err) {
+        console.error("Failed to sync system prompt to cloud:", err);
+      }
+    }
   };
 
   const handleClearConversations = async (mode: StorageMode) => {
@@ -459,6 +496,7 @@ export default function App() {
           defaultModel={model}
           onDefaultModelChange={handleDefaultModelChange}
           systemPrompt={systemPrompt}
+          syncSystemPrompt={syncSystemPrompt}
           onSystemPromptChange={handleSystemPromptChange}
           models={models}
           onClearConversations={handleClearConversations}
