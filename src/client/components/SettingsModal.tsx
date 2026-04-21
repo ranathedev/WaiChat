@@ -11,7 +11,8 @@ interface SettingsModalProps {
   defaultModel: string;
   onDefaultModelChange: (model: string) => void;
   systemPrompt: string;
-  onSystemPromptChange: (prompt: string) => void;
+  syncSystemPrompt: boolean;
+  onSystemPromptChange: (prompt: string, sync: boolean) => void;
   models: Model[];
   onClearConversations: (mode: StorageMode) => void;
   theme: "system" | "light" | "dark";
@@ -26,6 +27,7 @@ export default function SettingsModal({
   defaultModel,
   onDefaultModelChange,
   systemPrompt,
+  syncSystemPrompt,
   onSystemPromptChange,
   models,
   onClearConversations,
@@ -38,6 +40,7 @@ export default function SettingsModal({
   const [draftStorageMode, setDraftStorageMode] = useState<StorageMode>(storageMode);
   const [draftModel, setDraftModel] = useState(defaultModel);
   const [draftSystemPrompt, setDraftSystemPrompt] = useState(systemPrompt);
+  const [draftSyncSystemPrompt, setDraftSyncSystemPrompt] = useState(syncSystemPrompt);
 
   // Sync draft with props when modal opens
   useEffect(() => {
@@ -45,8 +48,9 @@ export default function SettingsModal({
       setDraftStorageMode(storageMode);
       setDraftModel(defaultModel);
       setDraftSystemPrompt(systemPrompt);
+      setDraftSyncSystemPrompt(syncSystemPrompt);
     }
-  }, [open, storageMode, defaultModel, systemPrompt]);
+  }, [open, storageMode, defaultModel, systemPrompt, syncSystemPrompt]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -61,7 +65,7 @@ export default function SettingsModal({
   const handleSave = () => {
     onStorageModeChange(draftStorageMode);
     onDefaultModelChange(draftModel);
-    onSystemPromptChange(draftSystemPrompt);
+    onSystemPromptChange(draftSystemPrompt, draftSyncSystemPrompt);
     onClose();
   };
 
@@ -168,9 +172,25 @@ export default function SettingsModal({
               </div>
               {/* System prompt */}
               <div>
-                <label className="block text-[13px] md:text-sm font-medium text-gray-700 dark:text-white/80 mb-2">
-                  System Prompt
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-[13px] md:text-sm font-medium text-gray-700 dark:text-white/80">
+                    System Prompt
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <div className="relative flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={draftSyncSystemPrompt}
+                        onChange={(e) => setDraftSyncSystemPrompt(e.target.checked)}
+                        className="peer sr-only"
+                      />
+                      <div className="w-8 h-4 bg-black/10 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#0A84FF]"></div>
+                    </div>
+                    <span className="text-[11px] md:text-xs font-medium text-gray-500 dark:text-white/40 group-hover:text-gray-900 dark:group-hover:text-white/80 transition-colors">
+                      Sync to Cloud
+                    </span>
+                  </label>
+                </div>
                 <textarea
                   value={draftSystemPrompt}
                   onChange={(e) => setDraftSystemPrompt(e.target.value)}

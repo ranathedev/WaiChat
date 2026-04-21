@@ -12,6 +12,8 @@ import {
   saveMessage,
   updateConversationTimestamp,
   updateConversationTitle,
+  getSetting,
+  setSetting,
 } from "./db";
 import type { ChatRequest, Env } from "./types";
 
@@ -264,6 +266,18 @@ app.delete("/api/conversations/:conversationId/messages/:messageId", async (c) =
     console.error("[DELETE /message] error:", e);
     return c.json({ error: "Failed to delete message" }, 500);
   }
+});
+
+// Settings
+app.get("/api/settings/:key", async (c) => {
+  const value = await getSetting(c.env.DB, c.req.param("key"));
+  return c.json({ value });
+});
+
+app.post("/api/settings/:key", async (c) => {
+  const { value } = await c.req.json<{ value: string }>();
+  await setSetting(c.env.DB, c.req.param("key"), value);
+  return c.json({ success: true });
 });
 
 // Title generation (used by local mode)
