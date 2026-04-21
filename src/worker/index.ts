@@ -242,6 +242,7 @@ app.post("/api/chat", async (c) => {
         } catch (e) {
           // Client aborted the connection
           console.log("[/api/chat] Client disconnected");
+          await reader.cancel();
           break;
         }
 
