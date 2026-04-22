@@ -11,15 +11,15 @@
   
 </div>
 
-A Private, Serverless AI Chat App built on [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/). Free to run, yours to own, one click to deploy. No backend server, no third-party services, no monthly bills. Deploy in one click and start chatting.
+Free, open-source AI chat that runs entirely on Cloudflare's free tier. 1-click deploy. Powered by the latest open-source models via Workers AI.
 
 > _WaiChat is in active development. Core chat is functional, but authentication and UI/UX are still being refined. Use for testing/personal purposes only. Track progress or suggest fixes [here](https://github.com/users/ranajahanzaib/projects/33/views/3)._
 >
 > _**WaiChat is short for Workers AI Chat**_
 
-<img width="1413" height="1111" alt="Screenshot 2026-04-19 at 7 50 00 PM" src="https://github.com/user-attachments/assets/3643606f-7687-447c-960d-e2bd93f6ec04" />
+<img width="1572" height="1210" alt="Screenshot 2026-04-22 at 2 02 50 PM" src="https://github.com/user-attachments/assets/5de4f94c-12d6-4b4b-b15f-21d409ed61c6" />
 
-<img width="1405" height="1126" alt="Screenshot 2026-04-19 at 7 51 11 PM" src="https://github.com/user-attachments/assets/aa8efc93-99cf-438d-8a36-4e7c462a2f36" />
+<img width="1573" height="1201" alt="image" src="https://github.com/user-attachments/assets/17a5868d-2844-4f34-8532-779f09eca4f6" />
 
 https://github.com/user-attachments/assets/e62c3a84-aa5d-4d24-be3f-f162115db89a
 
@@ -39,7 +39,7 @@ https://github.com/user-attachments/assets/e62c3a84-aa5d-4d24-be3f-f162115db89a
 ### One-click
 The easiest way to self-host WaiChat is via the Deploy to Cloudflare button below.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/WaiChat/tree/v0.1.2-alpha)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/WaiChat/tree/v0.1.3-alpha)
 
 Click the button and Cloudflare handles everything automatically - no CLI, no config files to edit, no manual steps required. Behind the scenes it forks the repo into your GitHub account, provisions a D1 database and Workers AI binding, then builds and deploys the app to `https://waichat.<your-subdomain>.workers.dev`.
 
