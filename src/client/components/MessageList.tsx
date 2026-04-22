@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import type { Message } from "../storage";
 import ConfirmModal from "./ConfirmModal";
 
@@ -135,29 +138,129 @@ function ThoughtParser({ content }: { content: string }) {
   );
 }
 
+// Code block renderer with language bar and copy button
+function CodeBlockWrapper({ codeString, language }: { codeString: string; language: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(codeString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="my-4 rounded-lg overflow-hidden border-[0.5px] border-black/10 dark:border-white/10 bg-[#1e1e1e] shadow-sm group">
+      <div className="flex items-center justify-between px-4 py-1.5 bg-[#2d2d2d] text-gray-300 text-xs font-mono border-b border-white/10">
+        <span>{language}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+          aria-label="Copy code"
+        >
+          {copied ? (
+            <>
+              <span className="text-[#34C759]">✓</span> Copied
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+              Copy Code
+            </>
+          )}
+        </button>
+      </div>
+      <SyntaxHighlighter
+        style={vscDarkPlus}
+        language={language === "text" ? "text" : language}
+        PreTag="div"
+        customStyle={{
+          margin: 0,
+          padding: "1rem",
+          background: "transparent",
+          fontSize: "0.875rem",
+        }}
+      >
+        {codeString}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
+
 // Extracted Markdown renderer
 function MarkdownRenderer({ content }: { content: string }) {
   return (
     <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
       components={{
-        code: ({ children, className }) => {
-          const isBlock = className?.includes("language-");
-          return isBlock ? (
-            <pre className="bg-gray-100/80 border-[0.5px] border-black/10 text-gray-900 dark:bg-[#141416]/80 dark:border-white/10 dark:text-white/95 rounded-lg p-4 overflow-x-auto my-3 text-sm">
-              <code>{children}</code>
-            </pre>
-          ) : (
-            <code className="bg-black/5 dark:bg-white/10 rounded px-1.5 py-0.5 text-sm font-mono text-[#0A84FF]">
-              {children}
-            </code>
-          );
+        pre: ({ children }: any) => {
+          let codeString = "";
+          let language = "text";
+          
+          if (children && typeof children === 'object' && 'props' in children) {
+            codeString = String(children.props.children).replace(/\n$/, "");
+            const match = /language-(\w+)/.exec(children.props.className || "");
+            if (match) {
+              language = match[1];
+            }
+          } else {
+            codeString = String(children).replace(/\n$/, "");
+          }
+          
+          return <CodeBlockWrapper codeString={codeString} language={language} />;
         },
+        code: ({ children, className, ...props }: any) => (
+          <code className="bg-black/5 dark:bg-white/10 rounded px-1.5 py-0.5 text-sm font-mono text-[#0A84FF]" {...props}>
+            {children}
+          </code>
+        ),
         p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
         ul: ({ children }) => (
-          <ul className="list-disc list-inside mb-3 space-y-1.5">{children}</ul>
+          <ul className="list-disc list-outside ml-5 mb-3 space-y-1.5">{children}</ul>
         ),
         ol: ({ children }) => (
-          <ol className="list-decimal list-inside mb-3 space-y-1.5">{children}</ol>
+          <ol className="list-decimal list-outside ml-5 mb-3 space-y-1.5">{children}</ol>
+        ),
+        a: ({ children, href }) => (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#0A84FF] hover:underline">
+            {children}
+          </a>
+        ),
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-4 border-black/20 dark:border-white/20 pl-4 py-1 my-3 text-gray-700 dark:text-white/70 italic">
+            {children}
+          </blockquote>
+        ),
+        table: ({ children }) => (
+          <div className="overflow-x-auto mb-4 border-[0.5px] border-black/10 dark:border-white/10 rounded-lg">
+            <table className="min-w-full divide-y divide-black/10 dark:divide-white/10 text-sm">
+              {children}
+            </table>
+          </div>
+        ),
+        thead: ({ children }) => <thead className="bg-black/5 dark:bg-white/5">{children}</thead>,
+        tbody: ({ children }) => <tbody className="divide-y divide-black/10 dark:divide-white/10">{children}</tbody>,
+        tr: ({ children }) => <tr>{children}</tr>,
+        th: ({ children }) => (
+          <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-white/95">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="px-4 py-3 text-gray-600 dark:text-white/80">
+            {children}
+          </td>
         ),
       }}
     >
