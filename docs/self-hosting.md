@@ -8,7 +8,7 @@ WaiChat deploys entirely on Cloudflare's free tier. This guide covers optional c
 
 The easiest way to self-host WaiChat is via the Deploy to Cloudflare button below.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/WaiChat/tree/v0.1.2-alpha)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ranajahanzaib/WaiChat/tree/v0.1.3-alpha)
 
 Click the button and Cloudflare handles everything automatically - no CLI, no config files to edit, no manual steps required. Behind the scenes it forks the repo into your GitHub account, provisions a D1 database and Workers AI binding, then builds and deploys the app to `https://waichat.<your-subdomain>.workers.dev`.
 
@@ -36,6 +36,18 @@ pnpm deploy:production   # build client and deploy worker
 
 ---
 
+## Lifecycle Management (Updates & Rollbacks)
+
+Once you have deployed WaiChat to your own GitHub repository using the One-Click Deploy button, you can manage your instance directly from your repository's Actions tab. WaiChat includes built-in workflows to make maintenance frictionless.
+
+To use these workflows, navigate to the Actions tab in your GitHub repository, select the desired workflow from the left sidebar, and click the "Run workflow" dropdown on the right.
+
+- **Update WaiChat:** Deploys the latest stable or pre-release version over your current instance. It safely aborts if there are merge conflicts.
+- **Rollback WaiChat:** If an update causes issues, run this workflow and enter a previous release tag (e.g., `v0.1.2-alpha`) to safely revert your code and redeploy.
+- **Dev: Test Upstream Branch:** To test a specific branch or feature before it is officially released, enter the branch name (e.g., `feat/ui-overhaul`) to deploy it directly to your existing instance.
+
+---
+
 ## Authentication (Cloudflare Access)
 
 By default, WaiChat is publicly accessible to anyone with the URL. To restrict access to specific users, enable Cloudflare Access directly from the Workers dashboard - free for up to 50 users, no zone or DNS configuration needed.
@@ -50,10 +62,10 @@ Go to [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages →
 
 You'll see two rows:
 
-| Type | Value |
-|---|---|
-| workers.dev | `waichat.<your-subdomain>.workers.dev` |
-| Preview URLs | *(preview deployments)* |
+| Type         | Value                                  |
+| ------------ | -------------------------------------- |
+| workers.dev  | `waichat.<your-subdomain>.workers.dev` |
+| Preview URLs | _(preview deployments)_                |
 
 **3. Enable Access on each domain**
 
@@ -69,7 +81,7 @@ After enabling, click the **⋯** menu again - you'll now see a **Manage Cloudfl
 
 Visit your WaiChat URL. You'll be prompted to authenticate. After verifying, you'll have full access.
 
-> **⚠️ Local Development Note:** Cloudflare Access blocks Wrangler's remote proxy session, which breaks `pnpm dev:worker`. Disable Cloudflare Access on your workers.dev domain while developing locally, then re-enable when done.
+> **Local Development Note:** Cloudflare Access blocks Wrangler's remote proxy session, which breaks `pnpm dev:worker`. Disable Cloudflare Access on your workers.dev domain while developing locally, then re-enable when done.
 
 ---
 
@@ -88,6 +100,7 @@ wrangler secret put CLOUDFLARE_API_TOKEN
 Your account ID is visible in the URL when logged into the Cloudflare dashboard: `dash.cloudflare.com/<account-id>`.
 
 To create a scoped API token:
+
 - Go to **My Profile → API Tokens → Create Token**
 - Use the **Read Workers AI** template or create a custom token with `Workers AI: Read` permission
 
@@ -97,10 +110,10 @@ Once set, `/api/models` will return the full live list sorted by recency and cap
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `CLOUDFLARE_ACCOUNT_ID` | No | Enables live model fetching from Cloudflare API |
-| `CLOUDFLARE_API_TOKEN` | No | Required alongside `CLOUDFLARE_ACCOUNT_ID` |
+| Variable                | Required | Description                                     |
+| ----------------------- | -------- | ----------------------------------------------- |
+| `CLOUDFLARE_ACCOUNT_ID` | No       | Enables live model fetching from Cloudflare API |
+| `CLOUDFLARE_API_TOKEN`  | No       | Required alongside `CLOUDFLARE_ACCOUNT_ID`      |
 
 All other configuration (D1 binding, Workers AI binding) is handled automatically via `wrangler.toml`.
 
