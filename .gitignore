@@ -44,3 +44,6 @@ wrangler.local.toml
 
 # Vercel
 .vercel
+
+# PNPM
+.pnpm-store
