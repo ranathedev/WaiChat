@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -138,23 +138,50 @@ function ThoughtParser({ content }: { content: string }) {
   );
 }
 
-// Code block renderer with language bar and copy button
-function CodeBlockWrapper({ codeString, language }: { codeString: string; language: string }) {
-  const [copied, setCopied] = useState(false);
+let globalIsDark = true;
+const themeListeners = new Set<(isDark: boolean) => void>();
+let observerInitialized = false;
+
+function useGlobalTheme() {
   const [isDark, setIsDark] = useState(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
+    if (typeof document !== "undefined") {
+      return document.documentElement.classList.contains("dark");
     }
     return true;
   });
 
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
+    if (typeof document === "undefined") return;
+
+    const handleThemeChange = (dark: boolean) => setIsDark(dark);
+    themeListeners.add(handleThemeChange);
+    setIsDark(document.documentElement.classList.contains("dark"));
+
+    if (!observerInitialized) {
+      observerInitialized = true;
+      globalIsDark = document.documentElement.classList.contains("dark");
+      const observer = new MutationObserver(() => {
+        const newIsDark = document.documentElement.classList.contains("dark");
+        if (globalIsDark !== newIsDark) {
+          globalIsDark = newIsDark;
+          themeListeners.forEach((l) => l(newIsDark));
+        }
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    }
+
+    return () => {
+      themeListeners.delete(handleThemeChange);
+    };
   }, []);
+
+  return isDark;
+}
+
+// Code block renderer with language bar and copy button
+function CodeBlockWrapper({ codeString, language }: { codeString: string; language: string }) {
+  const [copied, setCopied] = useState(false);
+  const isDark = useGlobalTheme();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(codeString);
@@ -218,13 +245,14 @@ function MarkdownRenderer({ content }: { content: string }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        pre: ({ children }: any) => {
+        pre: ({ children }: React.ComponentPropsWithoutRef<"pre">) => {
           let codeString = "";
           let language = "text";
           
-          if (children && typeof children === 'object' && 'props' in children) {
-            codeString = String(children.props.children).replace(/\n$/, "");
-            const match = /language-(\w+)/.exec(children.props.className || "");
+          if (children && React.isValidElement(children)) {
+            const childProps = children.props as { children?: React.ReactNode; className?: string };
+            codeString = String(childProps.children).replace(/\n$/, "");
+            const match = /language-(\w+)/.exec(childProps.className || "");
             if (match) {
               language = match[1];
             }
@@ -234,7 +262,7 @@ function MarkdownRenderer({ content }: { content: string }) {
           
           return <CodeBlockWrapper codeString={codeString} language={language} />;
         },
-        code: ({ children, className, ...props }: any) => (
+        code: ({ children, className, ...props }: React.ComponentPropsWithoutRef<"code">) => (
           <code className="bg-black/5 dark:bg-white/10 rounded px-1.5 py-0.5 text-sm font-mono text-[#0A84FF]" {...props}>
             {children}
           </code>
