@@ -13,6 +13,7 @@ interface UseChatReturn {
   selectConversation: (id: string) => Promise<void>;
   newConversation: (model: string) => Promise<Conversation>;
   deleteConversation: (id: string) => Promise<void>;
+  updateActiveModel: (model: string) => Promise<void>;
   clearConversation: () => void;
   sendMessage: (
     content: string,
@@ -121,6 +122,26 @@ export function useChat(
         setActiveConversation(null);
         setMessages([]);
         setActiveVersions({});
+      }
+    },
+    [storage, activeConversation],
+  );
+
+  const updateActiveModel = useCallback(
+    async (model: string) => {
+      if (!activeConversation) return;
+      try {
+        await storage.updateConversationModel(activeConversation.id, model);
+        const now = Date.now();
+        setActiveConversation((prev) => (prev ? { ...prev, model, updated_at: now } : null));
+        setConversations((prev) =>
+          prev
+            .map((c) => (c.id === activeConversation.id ? { ...c, model, updated_at: now } : c))
+            .sort((a, b) => b.updated_at - a.updated_at),
+        );
+      } catch (err) {
+        console.error("Failed to update active model:", err);
+        setError("Failed to update conversation model");
       }
     },
     [storage, activeConversation],
@@ -548,6 +569,7 @@ export function useChat(
     selectConversation,
     newConversation,
     deleteConversation,
+    updateActiveModel,
     clearConversation,
     sendMessage,
     stopGeneration,

@@ -11,7 +11,7 @@ import SettingsModal from "./components/SettingsModal";
 
 const STORAGE_MODE_KEY = "waichat:storage-mode";
 const SYSTEM_PROMPT_KEY = "waichat:system-prompt";
-const SYNC_PROMPT_KEY = "waichat:sync-system-prompt";
+const SYNC_SETTINGS_KEY = "waichat:sync-settings";
 const DEFAULT_MODEL_KEY = "waichat:default-model";
 export const THEME_KEY = "waichat:theme";
 const MOBILE_BREAKPOINT = 768;
@@ -92,6 +92,7 @@ export default function App() {
     selectConversation,
     newConversation,
     deleteConversation,
+    updateActiveModel,
     clearConversation,
     sendMessage,
     stopGeneration,
@@ -109,14 +110,14 @@ export default function App() {
   } = useTransfer();
 
   const { models } = useModels();
-  const [model, setModel] = useState(
+  const [defaultModel, setDefaultModel] = useState(
     () => localStorage.getItem(DEFAULT_MODEL_KEY) ?? DEFAULT_MODEL_ID,
   );
   const [systemPrompt, setSystemPrompt] = useState(
     () => localStorage.getItem(SYSTEM_PROMPT_KEY) ?? "",
   );
-  const [syncSystemPrompt, setSyncSystemPrompt] = useState(
-    () => localStorage.getItem(SYNC_PROMPT_KEY) === "true",
+  const [syncSettings, setSyncSettings] = useState(
+    () => (localStorage.getItem(SYNC_SETTINGS_KEY) ?? localStorage.getItem("waichat:sync-system-prompt")) === "true",
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -135,7 +136,7 @@ export default function App() {
 
   // Sync System Prompt from Cloud if enabled
   useEffect(() => {
-    if (syncSystemPrompt) {
+    if (syncSettings) {
       fetch("/api/settings/system_prompt")
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch system prompt");
@@ -147,9 +148,27 @@ export default function App() {
             localStorage.setItem(SYSTEM_PROMPT_KEY, data.value);
           }
         })
-        .catch((err) => console.error("Cloud sync error:", err));
+        .catch((err) => console.error("Cloud sync error (system_prompt):", err));
     }
-  }, [syncSystemPrompt]); // fetch on mount or when toggled ON
+  }, [syncSettings]);
+
+  // Sync Default Model from Cloud if enabled
+  useEffect(() => {
+    if (syncSettings) {
+      fetch("/api/settings/default_model")
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch default model");
+          return res.json() as Promise<{ value?: string }>;
+        })
+        .then((data) => {
+          if (data.value != null && data.value !== defaultModel) {
+            setDefaultModel(data.value);
+            localStorage.setItem(DEFAULT_MODEL_KEY, data.value);
+          }
+        })
+        .catch((err) => console.error("Cloud sync error (default_model):", err));
+    }
+  }, [syncSettings]);
 
   const initialLoadDone = useRef(false);
 
@@ -272,32 +291,53 @@ export default function App() {
         closeSidebarOnMobile();
         return;
       }
-      await newConversation(model);
+      await newConversation(defaultModel);
     }
     closeSidebarOnMobile();
   };
 
   const handleSend = async (content: string) => {
     if (isStreaming) return;
+    const currentModel = activeConversation?.model ?? defaultModel;
     if (!activeConversation) {
-      const convo = await newConversation(model);
-      await sendMessage(content, model, convo.id, storageMode, systemPrompt);
+      const convo = await newConversation(defaultModel);
+      await sendMessage(content, defaultModel, convo.id, storageMode, systemPrompt);
     } else {
-      await sendMessage(content, model, activeConversation.id, storageMode, systemPrompt);
+      await sendMessage(content, currentModel, activeConversation.id, storageMode, systemPrompt);
     }
   };
 
-  const handleDefaultModelChange = (m: string) => {
-    setModel(m);
+  const handleDefaultModelChange = async (m: string, sync: boolean = syncSettings) => {
+    setDefaultModel(m);
     localStorage.setItem(DEFAULT_MODEL_KEY, m);
+
+    if (sync) {
+      try {
+        await fetch("/api/settings/default_model", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: m }),
+        });
+      } catch (err) {
+        console.error("Failed to sync default model to cloud:", err);
+      }
+    }
+  };
+
+  const handleModelChange = (m: string) => {
+    if (activeConversation) {
+      updateActiveModel(m);
+    } else {
+      handleDefaultModelChange(m, syncSettings);
+    }
   };
 
   const handleSystemPromptChange = async (prompt: string, sync: boolean) => {
     setSystemPrompt(prompt);
     localStorage.setItem(SYSTEM_PROMPT_KEY, prompt);
 
-    setSyncSystemPrompt(sync);
-    localStorage.setItem(SYNC_PROMPT_KEY, String(sync));
+    setSyncSettings(sync);
+    localStorage.setItem(SYNC_SETTINGS_KEY, String(sync));
 
     if (sync) {
       try {
@@ -423,8 +463,8 @@ export default function App() {
                 <div className="flex-1 min-w-0">
                   <ModelPicker
                     models={models}
-                    value={model}
-                    onChange={handleDefaultModelChange}
+                    value={activeConversation?.model ?? defaultModel}
+                    onChange={handleModelChange}
                     disabled={isStreaming}
                   />
                 </div>
@@ -525,7 +565,7 @@ export default function App() {
             messages={messages}
             isStreaming={isStreaming}
             onSelectPrompt={setPendingPrompt}
-            onRetry={(messageId) => retryMessage(messageId, model, storageMode, systemPrompt)}
+            onRetry={(messageId) => retryMessage(messageId, activeConversation?.model ?? defaultModel, storageMode, systemPrompt)}
             onDelete={(messageId) => deleteMessage(messageId)}
             activeVersions={activeVersions}
             onVersionChange={setActiveVersion}
@@ -544,10 +584,10 @@ export default function App() {
           onClose={() => setSettingsOpen(false)}
           storageMode={storageMode}
           onStorageModeChange={handleStorageToggle}
-          defaultModel={model}
+          defaultModel={defaultModel}
           onDefaultModelChange={handleDefaultModelChange}
           systemPrompt={systemPrompt}
-          syncSystemPrompt={syncSystemPrompt}
+          syncSettings={syncSettings}
           onSystemPromptChange={handleSystemPromptChange}
           models={models}
           onClearConversations={handleClearConversations}
