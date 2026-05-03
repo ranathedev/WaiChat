@@ -3,6 +3,7 @@ export interface Env {
   DB: D1Database;
   CLOUDFLARE_ACCOUNT_ID?: string;
   CLOUDFLARE_API_TOKEN?: string;
+  SECRET_KEY?: string;
 }
 
 export interface Conversation {
@@ -23,6 +24,11 @@ export interface Message {
   model?: string;
   parent_id?: string;
   deleted_at?: number;
+}
+
+export interface Model {
+  id: string;
+  name: string;
 }
 
 export interface ChatRequest {
